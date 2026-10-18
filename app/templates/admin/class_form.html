@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Add' if action == 'add' else 'Edit' }} Class — EngageVision{% endblock %}
+{% block page_title %}{{ 'Add' if action == 'add' else 'Edit' }} Class{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-header__title">
+      <i class="fa fa-{% if action == 'add' %}plus-circle{% else %}pencil{% endif %}"></i>
+      {{ 'Add New Class' if action == 'add' else 'Edit Class' }}
+    </h1>
+    <p class="page-header__subtitle">
+      {% if action == 'add' %}
+        Fill in the details below to create a new class.
+      {% else %}
+        Update the details for <strong>{{ cls.class_name }}</strong>.
+      {% endif %}
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <a href="{{ url_for('admin.classes') }}" class="btn btn-ghost">
+      <i class="fa fa-arrow-left"></i> Back to Classes
+    </a>
+  </div>
+</div>
+
+{# ── Flash Messages ── #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert--{{ category }}">
+        <i class="fa fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{# ── Form Card ── #}
+<div class="form-card">
+  <form method="POST"
+        action="{{ url_for('admin.add_class') if action == 'add' else url_for('admin.edit_class', class_id=cls.id) }}"
+        novalidate>
+
+
+
+    {# ── Class Name ── #}
+    <div class="form-group">
+      <label for="class_name" class="form-label">
+        <i class="fa fa-book"></i> Class Name
+        <span class="form-label__required" aria-label="required">*</span>
+      </label>
+      <input
+        type="text"
+        id="class_name"
+        name="class_name"
+        class="form-input{% if form and form.class_name.errors %} form-input--error{% endif %}"
+        value="{{ form.class_name.data if form and form.class_name.data else (cls.class_name if cls else '') }}"
+        placeholder="e.g. Computer Science III"
+        required
+        maxlength="120"
+        aria-required="true"
+      >
+      {% if form and form.class_name.errors %}
+        <p class="form-error">
+          <i class="fa fa-exclamation-circle"></i>
+          {{ form.class_name.errors[0] }}
+        </p>
+      {% endif %}
+    </div>
+
+    {# ── Course Code ── #}
+    <div class="form-group">
+      <label for="course_code" class="form-label">
+        <i class="fa fa-tag"></i> Course Code
+      </label>
+      <input
+        type="text"
+        id="course_code"
+        name="course_code"
+        class="form-input{% if form and form.course_code.errors %} form-input--error{% endif %}"
+        value="{{ form.course_code.data if form and form.course_code.data else (cls.course_code if cls else '') }}"
+        placeholder="e.g. CS301"
+        maxlength="30"
+      >
+      {% if form and form.course_code.errors %}
+        <p class="form-error">
+          <i class="fa fa-exclamation-circle"></i>
+          {{ form.course_code.errors[0] }}
+        </p>
+      {% endif %}
+    </div>
+
+    {# ── Semester & Academic Year (two-column) ── #}
+    <div class="form-row">
+      <div class="form-group form-group--half">
+        <label for="semester" class="form-label">
+          <i class="fa fa-calendar"></i> Semester
+        </label>
+        <input
+          type="text"
+          id="semester"
+          name="semester"
+          class="form-input{% if form and form.semester.errors %} form-input--error{% endif %}"
+          value="{{ form.semester.data if form and form.semester.data else (cls.semester if cls else '') }}"
+          placeholder="e.g. 5, Odd 2025"
+          maxlength="30"
+        >
+        {% if form and form.semester.errors %}
+          <p class="form-error">
+            <i class="fa fa-exclamation-circle"></i>
+            {{ form.semester.errors[0] }}
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="form-group form-group--half">
+        <label for="academic_year" class="form-label">
+          <i class="fa fa-calendar-o"></i> Academic Year
+        </label>
+        <input
+          type="text"
+          id="academic_year"
+          name="academic_year"
+          class="form-input{% if form and form.academic_year.errors %} form-input--error{% endif %}"
+          value="{{ form.academic_year.data if form and form.academic_year.data else (cls.academic_year if cls else '') }}"
+          placeholder="e.g. 2025–26"
+          maxlength="20"
+        >
+        {% if form and form.academic_year.errors %}
+          <p class="form-error">
+            <i class="fa fa-exclamation-circle"></i>
+            {{ form.academic_year.errors[0] }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Description ── #}
+    <div class="form-group">
+      <label for="description" class="form-label">
+        <i class="fa fa-align-left"></i> Description
+      </label>
+      <textarea
+        id="description"
+        name="description"
+        class="form-input form-textarea{% if form and form.description.errors %} form-input--error{% endif %}"
+        placeholder="Optional notes about this class…"
+        rows="4"
+        maxlength="500"
+      >{{ form.description.data if form and form.description.data else (cls.description if cls else '') }}</textarea>
+      {% if form and form.description.errors %}
+        <p class="form-error">
+          <i class="fa fa-exclamation-circle"></i>
+          {{ form.description.errors[0] }}
+        </p>
+      {% endif %}
+      <p class="form-hint">Maximum 500 characters.</p>
+    </div>
+
+    {# ── Form Actions ── #}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa fa-save"></i>
+        {{ 'Create Class' if action == 'add' else 'Save Changes' }}
+      </button>
+      <a href="{{ url_for('admin.classes') }}" class="btn btn-ghost">
+        <i class="fa fa-times"></i> Cancel
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

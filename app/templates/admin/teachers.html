@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block title %}Manage Teachers — EngageVision{% endblock %}
+{% block page_title %}Manage Teachers{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-users"></i> Manage Teachers</h1>
+    <p class="page-subtitle">Create and manage teacher accounts for EngageVision</p>
+  </div>
+  <a href="{{ url_for('admin.add_teacher') }}" class="btn btn-primary">
+    <i class="fas fa-user-plus"></i> Add New Teacher
+  </a>
+</div>
+
+<!-- Stats row -->
+{% set activated   = teachers | selectattr('username') | list %}
+{% set pending     = teachers | rejectattr('username') | list %}
+{% set active_list = activated | selectattr('is_active') | list %}
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1.5rem;">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ teachers|length }}</div>
+      <div class="stat-label">Total Teachers</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ active_list|length }}</div>
+      <div class="stat-label">Active</div>
+    </div>
+  </div>
+  <div class="stat-card" style="border-top: 3px solid var(--amber, #f59e0b);">
+    <div class="stat-icon" style="background: rgba(245,158,11,.1); color: var(--amber, #f59e0b);"><i class="fas fa-clock"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ pending|length }}</div>
+      <div class="stat-label">Pending Setup</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ (activated | rejectattr('is_active') | list) | length }}</div>
+      <div class="stat-label">Inactive</div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Table -->
+<div class="table-card">
+  <div class="table-header">
+    <h3><i class="fas fa-list"></i> All Teachers</h3>
+    <div class="table-search">
+      <input type="text" id="teacherSearch" class="form-input" placeholder="Search teachers…" style="width:240px;" />
+    </div>
+  </div>
+
+  {% if teachers %}
+  <div class="table-responsive">
+    <table class="data-table" id="teacherTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Staff ID</th>
+          <th>Department</th>
+          <th>Status</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in teachers %}
+        {% set not_activated = t.username is none or not t.username %}
+        <tr class="teacher-row">
+          <td class="text-muted">{{ loop.index }}</td>
+          <td>
+            <div class="teacher-name-cell">
+              <div class="avatar-sm">
+                {{ t.first_name[0]|upper }}{{ t.last_name[0]|upper if t.last_name else '' }}
+              </div>
+              <div>
+                <strong>{{ t.first_name }} {{ t.last_name }}</strong>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if not_activated %}
+            <span class="text-muted" style="font-style:italic; font-size:.82rem;">Not yet set</span>
+            {% else %}
+            <code class="username-code">{{ t.username }}</code>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ t.email }}</td>
+          <td>{{ t.staff_id or '—' }}</td>
+          <td>{{ t.department or '—' }}</td>
+          <td>
+            {% if not_activated %}
+            <span class="badge" style="background:rgba(245,158,11,.15);color:#92400e;border:1px solid rgba(245,158,11,.4);">
+              <i class="fas fa-clock" style="font-size:.65rem;"></i> Pending Setup
+            </span>
+            {% elif t.is_active %}
+            <span class="badge badge-success"><i class="fas fa-circle"></i> Active</span>
+            {% else %}
+            <span class="badge badge-danger"><i class="fas fa-circle"></i> Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-muted text-sm">
+            {% if t.last_signed_in %}
+              {{ t.last_signed_in.strftime('%d %b %Y, %I:%M %p') if t.last_signed_in is not string else t.last_signed_in }}
+            {% else %}Never{% endif %}
+          </td>
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('admin.edit_teacher', teacher_id=t.id) }}"
+                 class="btn btn-sm btn-outline" title="Edit teacher">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+
+              {% if not_activated %}
+              <!-- Not yet set up: show info text -->
+              <span class="btn btn-sm btn-outline" style="pointer-events:none;opacity:.7;" title="Teacher must set up via login page">
+                <i class="fas fa-info-circle"></i> Awaiting Setup
+              </span>
+              {% else %}
+              <!-- Activated teacher: show Activate/Deactivate toggle -->
+           <form method="POST"
+      action="{{ url_for('admin.toggle_teacher', teacher_id=t.id) }}"
+      style="display:inline;"
+      onsubmit="return confirm('Are you sure you want to {% if t.is_active %}deactivate{% else %}activate{% endif %} {{ t.first_name }} {{ t.last_name }}?');">
+
+    <button type="submit"
+            class="btn btn-sm {{ 'btn-warning' if t.is_active else 'btn-success' }}"
+            title="{{ 'Deactivate' if t.is_active else 'Activate' }}">
+
+        <i class="fas fa-{{ 'ban' if t.is_active else 'check' }}"></i>
+        {{ 'Deactivate' if t.is_active else 'Activate' }}
+
+    </button>
+</form>
+              {% endif %}
+
+              <form method="POST"
+                    action="{{ url_for('admin.delete_teacher', teacher_id=t.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('WARNING: Permanently delete teacher {{ t.first_name }} {{ t.last_name }}? This cannot be undone.')">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete teacher">
+                  <i class="fas fa-trash-alt"></i> Delete
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-users"></i>
+    <h3>No teachers yet</h3>
+    <p>Create the first teacher account to get started.</p>
+    <a href="{{ url_for('admin.add_teacher') }}" class="btn btn-primary">
+      <i class="fas fa-user-plus"></i> Add First Teacher
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Live search filter
+document.getElementById('teacherSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.teacher-row').forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(q) ? '' : 'none';
+  });
+});
+
+// Auto-dismiss flash messages
+setTimeout(() => {
+  document.querySelectorAll('.flash-toast').forEach(el => el.style.opacity = '0');
+}, 4000);
+</script>
+{% endblock %}

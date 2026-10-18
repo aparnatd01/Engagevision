@@ -1,0 +1,1008 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — EngageVision{% endblock %}
+
+{% block page_title %}Teacher Dashboard{% endblock %}
+
+
+{% block content %}
+
+<!-- =========================================================
+     WELCOME HEADER
+     ========================================================= -->
+
+<div class="page-header">
+
+    <div>
+
+        <h1 class="page-title">
+            Welcome back, {{ teacher.first_name }}!
+        </h1>
+
+        <p class="page-subtitle">
+
+            <i class="fas fa-calendar-alt"></i>
+
+            <span id="liveDateTime"></span>
+
+            &nbsp;&nbsp;
+
+            <i class="fas fa-id-badge"></i>
+            {{ teacher.staff_id or 'N/A' }}
+
+            &nbsp;|&nbsp;
+
+            <i class="fas fa-building"></i>
+            {{ teacher.department or 'Department not set' }}
+
+        </p>
+
+    </div>
+
+
+    <!-- START MONITORING BUTTON -->
+
+    <a
+        href="{{ url_for('monitoring.index') }}"
+        class="btn btn-start-monitoring"
+    >
+
+        <i class="fas fa-play-circle"></i>
+
+        <span>
+            Start Engagement Monitoring
+        </span>
+
+    </a>
+
+</div>
+
+
+<!-- =========================================================
+     ENGAGEMENT SUMMARY CARDS
+     ========================================================= -->
+
+<div class="stats-grid">
+
+
+    <!-- Overall Engagement -->
+
+    <div class="stat-card stat-card--green">
+
+        <div class="stat-icon stat-icon--green">
+
+            <i class="fas fa-chart-line"></i>
+
+        </div>
+
+        <div class="stat-body">
+
+            {% if stats.completed_sessions > 0 %}
+
+                <div class="stat-value">
+                    {{ stats.avg_overall }}%
+                </div>
+
+            {% else %}
+
+                <div class="stat-value stat-empty">
+                    —
+                </div>
+
+            {% endif %}
+
+            <div class="stat-label">
+                Overall Engagement
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- High Engagement -->
+
+    <div
+        class="stat-card"
+        style="border-top:3px solid #3b82f6;"
+    >
+
+        <div
+            class="stat-icon"
+            style="background:rgba(59,130,246,.12);color:#3b82f6;"
+        >
+
+            <i class="fas fa-arrow-trend-up"></i>
+
+        </div>
+
+        <div class="stat-body">
+
+            {% if stats.completed_sessions > 0 %}
+
+                <div
+                    class="stat-value"
+                    style="color:#3b82f6;"
+                >
+                    {{ stats.avg_high }}%
+                </div>
+
+            {% else %}
+
+                <div class="stat-value stat-empty">
+                    —
+                </div>
+
+            {% endif %}
+
+            <div class="stat-label">
+                High Engagement
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Medium Engagement -->
+
+    <div
+        class="stat-card"
+        style="border-top:3px solid #eab308;"
+    >
+
+        <div
+            class="stat-icon"
+            style="background:rgba(234,179,8,.12);color:#eab308;"
+        >
+
+            <i class="fas fa-minus"></i>
+
+        </div>
+
+        <div class="stat-body">
+
+            {% if stats.completed_sessions > 0 %}
+
+                <div
+                    class="stat-value"
+                    style="color:#b45309;"
+                >
+                    {{ stats.avg_medium }}%
+                </div>
+
+            {% else %}
+
+                <div class="stat-value stat-empty">
+                    —
+                </div>
+
+            {% endif %}
+
+            <div class="stat-label">
+                Medium Engagement
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Low Engagement -->
+
+    <div
+        class="stat-card"
+        style="border-top:3px solid #f97316;"
+    >
+
+        <div
+            class="stat-icon"
+            style="background:rgba(249,115,22,.12);color:#f97316;"
+        >
+
+            <i class="fas fa-arrow-trend-down"></i>
+
+        </div>
+
+        <div class="stat-body">
+
+            {% if stats.completed_sessions > 0 %}
+
+                <div
+                    class="stat-value"
+                    style="color:#f97316;"
+                >
+                    {{ stats.avg_low }}%
+                </div>
+
+            {% else %}
+
+                <div class="stat-value stat-empty">
+                    —
+                </div>
+
+            {% endif %}
+
+            <div class="stat-label">
+                Low Engagement
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ENGAGEMENT OVERVIEW
+     ========================================================= -->
+
+{% if stats.completed_sessions > 0 %}
+
+<div
+    class="section-block"
+    style="margin-top:1.5rem;"
+>
+
+    <div
+        class="chart-card"
+        style="
+            background:var(--c-card);
+            border:1px solid var(--c-border);
+            border-radius:var(--r-lg);
+            box-shadow:var(--shadow-card);
+            overflow:hidden;
+        "
+    >
+
+
+        <!-- Chart Header -->
+
+        <div
+            class="card-header-bar"
+            style="
+                padding:var(--sp-4) var(--sp-6);
+                border-bottom:1px solid var(--c-border);
+                display:flex;
+                align-items:center;
+                gap:var(--sp-2);
+            "
+        >
+
+            <h3
+                style="
+                    margin:0;
+                    font-size:1rem;
+                    font-weight:700;
+                    color:var(--c-primary);
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                "
+            >
+
+                <i
+                    class="fas fa-chart-pie"
+                    style="color:var(--c-secondary);"
+                ></i>
+
+                Engagement Overview
+
+            </h3>
+
+        </div>
+
+
+        <!-- Chart Body -->
+
+        <div
+            class="card-body"
+            style="padding:var(--sp-6);"
+        >
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap:3rem;
+                    flex-wrap:wrap;
+                "
+            >
+
+
+                <!-- =================================================
+                     DOUGHNUT CHART
+                     ================================================= -->
+
+                <div
+                    style="
+                        width:220px;
+                        height:220px;
+                        position:relative;
+                        flex-shrink:0;
+                    "
+                >
+
+                    <canvas
+                        id="engagementDoughnut"
+                        aria-label="Engagement distribution chart"
+                        role="img"
+
+                        data-high="{{ stats.avg_high }}"
+                        data-medium="{{ stats.avg_medium }}"
+                        data-low="{{ stats.avg_low }}"
+                    ></canvas>
+
+
+                    <!-- Center Text -->
+
+                    <div
+                        style="
+                            position:absolute;
+                            top:50%;
+                            left:50%;
+                            transform:translate(-50%,-50%);
+                            text-align:center;
+                            pointer-events:none;
+                        "
+                    >
+
+                        <div
+                            style="
+                                font-size:1.75rem;
+                                font-weight:800;
+                                color:var(--c-primary);
+                                line-height:1;
+                            "
+                        >
+                            {{ stats.avg_overall }}%
+                        </div>
+
+                        <div
+                            style="
+                                font-size:0.7rem;
+                                font-weight:600;
+                                color:var(--c-text-3);
+                                text-transform:uppercase;
+                                letter-spacing:.05em;
+                                margin-top:2px;
+                            "
+                        >
+                            Overall
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     LEGEND
+                     ================================================= -->
+
+                <div
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        gap:14px;
+                        min-width:180px;
+                    "
+                >
+
+
+                    <!-- High -->
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:10px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                background:#3b82f6;
+                                flex-shrink:0;
+                            "
+                        ></span>
+
+                        <span
+                            style="
+                                font-size:0.85rem;
+                                color:var(--c-text-2);
+                                flex:1;
+                            "
+                        >
+                            High Engagement
+                        </span>
+
+                        <span
+                            style="
+                                font-size:0.95rem;
+                                font-weight:700;
+                                color:var(--c-primary);
+                            "
+                        >
+                            {{ stats.avg_high }}%
+                        </span>
+
+                    </div>
+
+
+                    <!-- Medium -->
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:10px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                background:#eab308;
+                                flex-shrink:0;
+                            "
+                        ></span>
+
+                        <span
+                            style="
+                                font-size:0.85rem;
+                                color:var(--c-text-2);
+                                flex:1;
+                            "
+                        >
+                            Medium Engagement
+                        </span>
+
+                        <span
+                            style="
+                                font-size:0.95rem;
+                                font-weight:700;
+                                color:var(--c-primary);
+                            "
+                        >
+                            {{ stats.avg_medium }}%
+                        </span>
+
+                    </div>
+
+
+                    <!-- Low -->
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:10px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                background:#f97316;
+                                flex-shrink:0;
+                            "
+                        ></span>
+
+                        <span
+                            style="
+                                font-size:0.85rem;
+                                color:var(--c-text-2);
+                                flex:1;
+                            "
+                        >
+                            Low Engagement
+                        </span>
+
+                        <span
+                            style="
+                                font-size:0.95rem;
+                                font-weight:700;
+                                color:var(--c-primary);
+                            "
+                        >
+                            {{ stats.avg_low }}%
+                        </span>
+
+                    </div>
+
+
+                    <!-- Session Info -->
+
+                    <div
+                        style="
+                            margin-top:6px;
+                            padding-top:10px;
+                            border-top:1px solid var(--c-border);
+                            font-size:0.78rem;
+                            color:var(--c-text-3);
+                        "
+                    >
+
+                        <i
+                            class="fas fa-video"
+                            style="margin-right:4px;"
+                        ></i>
+
+                        Based on
+
+                        {{ stats.completed_sessions }}
+
+                        completed session{{ 's' if stats.completed_sessions != 1 else '' }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- =========================================================
+     NO SESSIONS NOTICE
+     ========================================================= -->
+
+{% if total_sessions == 0 %}
+
+<div class="info-notice">
+
+    <i class="fas fa-info-circle"></i>
+
+    <div>
+
+        <strong>
+            No monitoring sessions yet.
+        </strong>
+
+        Use the
+        <em>Start Engagement Monitoring</em>
+        button above when the AI feature is available.
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- =========================================================
+     MY CLASSES
+     ========================================================= -->
+
+<div
+    class="section-block"
+    style="margin-top:2rem;"
+>
+
+    <div class="section-header-row">
+
+        <h2 class="section-title">
+
+            <i class="fas fa-chalkboard"></i>
+
+            My Classes
+
+        </h2>
+
+
+        <a
+            href="{{ url_for('dashboard.my_classes') }}"
+            class="btn btn-ghost btn-sm"
+        >
+            View All
+        </a>
+
+    </div>
+
+
+    {% if assignments %}
+
+    <div class="assignment-grid">
+
+        {% for a in assignments[:4] %}
+
+        <div class="assignment-card">
+
+
+            <!-- Class Header -->
+
+            <div class="assignment-header">
+
+                <div class="assignment-icon">
+
+                    <i class="fas fa-book"></i>
+
+                </div>
+
+                <div>
+
+                    <h4>
+                        {{ a.class_name }}
+                    </h4>
+
+                    {% if a.course_code %}
+
+                    <small class="text-muted">
+                        {{ a.course_code }}
+                    </small>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- Class Details -->
+
+            <div class="assignment-details">
+
+
+                <!-- Section -->
+
+                <div class="assignment-detail">
+
+                    <i class="fas fa-layer-group"></i>
+
+                    <span>
+                        Section
+                        <strong>
+                            {{ a.section_name }}
+                        </strong>
+                    </span>
+
+                </div>
+
+
+                <!-- Students -->
+
+                <div class="assignment-detail">
+
+                    <i class="fas fa-users"></i>
+
+                    <span>
+
+                        <strong>
+                            {{ a.student_count }}
+                        </strong>
+
+                        Students
+
+                    </span>
+
+                </div>
+
+
+                <!-- Room -->
+
+                {% if a.room_number %}
+
+                <div class="assignment-detail">
+
+                    <i class="fas fa-door-open"></i>
+
+                    <span>
+                        Room {{ a.room_number }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- Semester -->
+
+                {% if a.semester %}
+
+                <div class="assignment-detail">
+
+                    <i class="fas fa-graduation-cap"></i>
+
+                    <span>
+                        {{ a.semester }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% else %}
+
+
+    <!-- Empty State -->
+
+    <div class="empty-state">
+
+        <i class="fas fa-chalkboard"></i>
+
+        <h3>
+            No classes assigned yet
+        </h3>
+
+        <p>
+            Contact your administrator to assign you to a class and section.
+        </p>
+
+    </div>
+
+
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+{% block scripts %}
+
+<script>
+
+/* =========================================================
+   LIVE DATE AND TIME
+   ========================================================= */
+
+function updateDateTime() {
+
+    const now = new Date();
+
+    const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    };
+
+    const dateStr =
+        now.toLocaleDateString(
+            "en-IN",
+            options
+        );
+
+    const timeStr =
+        now.toLocaleTimeString(
+            "en-IN",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    const element =
+        document.getElementById(
+            "liveDateTime"
+        );
+
+    if (element) {
+
+        element.textContent =
+            dateStr + "  ·  " + timeStr;
+
+    }
+
+}
+
+
+/* Start clock */
+
+updateDateTime();
+
+
+/* Update every 10 seconds */
+
+setInterval(
+    updateDateTime,
+    10000
+);
+
+
+/* =========================================================
+   ENGAGEMENT DOUGHNUT CHART
+   ========================================================= */
+
+(function () {
+
+
+    /* Find canvas */
+
+    const canvas =
+        document.getElementById(
+            "engagementDoughnut"
+        );
+
+
+    /* Stop if chart is not displayed */
+
+    if (!canvas) {
+        return;
+    }
+
+
+    /* Read values from HTML data attributes */
+
+    const high =
+        parseFloat(
+            canvas.dataset.high || "0"
+        );
+
+    const medium =
+        parseFloat(
+            canvas.dataset.medium || "0"
+        );
+
+    const low =
+        parseFloat(
+            canvas.dataset.low || "0"
+        );
+
+
+    /* Check Chart.js */
+
+    if (typeof Chart === "undefined") {
+
+        console.warn(
+            "Chart.js is not loaded."
+        );
+
+        return;
+    }
+
+
+    /* Create chart */
+
+    new Chart(
+        canvas,
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: [
+                    "High Engagement",
+                    "Medium Engagement",
+                    "Low Engagement"
+                ],
+
+                datasets: [
+
+                    {
+
+                        data: [
+                            high,
+                            medium,
+                            low
+                        ],
+
+                        backgroundColor: [
+                            "#3b82f6",
+                            "#eab308",
+                            "#f97316"
+                        ],
+
+                        borderColor: "#ffffff",
+
+                        borderWidth: 3,
+
+                        hoverOffset: 10,
+
+                        hoverBorderWidth: 0
+
+                    }
+
+                ]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: true,
+
+                cutout: "70%",
+
+
+                plugins: {
+
+
+                    /* Hide default legend */
+
+                    legend: {
+
+                        display: false
+
+                    },
+
+
+                    /* Tooltip */
+
+                    tooltip: {
+
+                        backgroundColor:
+                            "rgba(18, 59, 93, 0.92)",
+
+                        padding: 12,
+
+                        cornerRadius: 8,
+
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                return (
+                                    " "
+                                    + context.label
+                                    + ": "
+                                    + context.parsed
+                                    + "%"
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+
+                /* Animation */
+
+                animation: {
+
+                    duration: 900,
+
+                    easing: "easeInOutQuart"
+
+                }
+
+            }
+
+        }
+    );
+
+
+})();
+
+</script>
+
+{% endblock %}

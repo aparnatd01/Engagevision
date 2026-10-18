@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}All Users — Admin{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>All Users</h1>
+  <p>View and manage all registered accounts.</p>
+</div>
+
+<div class="card">
+  <div class="card-header-bar">
+    <h3><i class="fas fa-users"></i> Registered Users</h3>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Staff/Reg ID</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ u.first_name }} {{ u.last_name }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="badge badge-{{ 'blue' if u.role=='teacher' else 'green' if u.role=='student' else 'purple' }}">{{ u.role | capitalize }}</span></td>
+            <td>{{ u.staff_id or u.register_number or '—' }}</td>
+            <td><span class="badge badge-{{ 'green' if u.is_active else 'amber' }}">{{ 'Active' if u.is_active else 'Pending' }}</span></td>
+            <td>
+              {% if u.role == 'teacher' %}
+              {% if not u.is_active %}
+              <form method="POST" action="{{ url_for('admin.approve_teacher', user_id=u.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-success">Approve</button>
+              </form>
+              {% else %}
+              <form method="POST" action="{{ url_for('admin.reject_teacher', user_id=u.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-danger" onclick="return confirm('Deactivate this teacher?')">Deactivate</button>
+              </form>
+              {% endif %}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

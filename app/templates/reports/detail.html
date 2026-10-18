@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+
+{% block title %}
+Report Detail — EngageVision
+{% endblock %}
+
+{% block page_title %}
+Engagement Report
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <h1 class="page-title">
+            <i class="fas fa-file-chart-column"></i>
+            Engagement Report
+        </h1>
+
+        <p class="page-subtitle">
+            {{ db_session.class_name or "—" }}
+            &bull;
+            Section {{ db_session.section_name or "—" }}
+
+            {% if db_session.session_date %}
+                &bull; {{ db_session.session_date }}
+            {% endif %}
+        </p>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <a
+            href="{{ url_for('reports.download', session_id=db_session.id) }}"
+            class="btn btn-primary"
+        >
+            <i class="fas fa-file-pdf"></i>
+            Download PDF
+        </a>
+
+        <a
+            href="{{ url_for('reports.index') }}"
+            class="btn btn-ghost"
+        >
+            <i class="fas fa-arrow-left"></i>
+            Back to Reports
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- SESSION INFORMATION -->
+
+<div class="report-meta-grid">
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-tag"></i>
+        </span>
+
+        <div>
+            <div class="meta-label">Session</div>
+
+            <div class="meta-value">
+                {{ db_session.session_name }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-book"></i>
+        </span>
+
+        <div>
+            <div class="meta-label">Class</div>
+
+            <div class="meta-value">
+                {{ db_session.class_name or "—" }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-layer-group"></i>
+        </span>
+
+        <div>
+            <div class="meta-label">Section</div>
+
+            <div class="meta-value">
+                {{ db_session.section_name or "—" }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-user"></i>
+        </span>
+
+        <div>
+            <div class="meta-label">Teacher</div>
+
+            <div class="meta-value">
+                {{ db_session.first_name }}
+                {{ db_session.last_name }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-calendar"></i>
+        </span>
+
+        <div>
+            <div class="meta-label">Date</div>
+
+            <div class="meta-value">
+                {{ db_session.session_date or "—" }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="meta-item">
+
+        <span class="meta-icon">
+            <i class="fas fa-clock"></i>
+        </span>
+
+        <div>
+
+            <div class="meta-label">
+                Duration
+            </div>
+
+            <div class="meta-value">
+
+                {% if db_session.duration_seconds %}
+
+                    {{ db_session.duration_seconds // 60 }}m
+                    {{ db_session.duration_seconds % 60 }}s
+
+                {% else %}
+
+                    N/A
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% if report %}
+
+
+<!-- ENGAGEMENT STATISTICS -->
+
+<div class="stats-grid">
+
+
+    <!-- TOTAL -->
+
+    <div class="stat-card stat-blue">
+
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+
+        <div class="stat-body">
+
+            <div class="stat-value">
+                {{ report.total_faces }}
+            </div>
+
+            <div class="stat-label">
+                Total Faces
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIVE -->
+
+    <div class="stat-card stat-green">
+
+        <div class="stat-icon">
+            <i class="fas fa-user-check"></i>
+        </div>
+
+        <div class="stat-body">
+
+            <div class="stat-value">
+                {{ report.active_count }}
+            </div>
+
+            <div class="stat-label">
+                Active
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- INACTIVE -->
+
+    <div class="stat-card stat-red">
+
+        <div class="stat-icon">
+            <i class="fas fa-user-times"></i>
+        </div>
+
+        <div class="stat-body">
+
+            <div class="stat-value">
+                {{ report.inactive_count }}
+            </div>
+
+            <div class="stat-label">
+                Inactive
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- OVERALL -->
+
+    <div class="stat-card stat-teal">
+
+        <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+
+        <div class="stat-body">
+
+            <div class="stat-value">
+                {{ "%.1f"|format(report.overall_percentage) }}%
+            </div>
+
+            <div class="stat-label">
+                Overall Engagement
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- ENGAGEMENT BREAKDOWN -->
+
+<div class="engagement-breakdown">
+
+
+    <!-- HIGH -->
+
+    <div class="breakdown-card breakdown-high">
+
+        <div class="breakdown-icon">
+            <i class="fas fa-arrow-trend-up"></i>
+        </div>
+
+        <div class="breakdown-value">
+            {{ report.high_count }}
+        </div>
+
+        <div class="breakdown-label">
+            High Engagement
+        </div>
+
+        <div class="breakdown-pct">
+            {{ "%.1f"|format(report.high_percentage) }}%
+        </div>
+
+        <div class="breakdown-bar">
+
+            <div class="breakdown-fill">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MEDIUM -->
+
+    <div class="breakdown-card breakdown-medium">
+
+        <div class="breakdown-icon">
+            <i class="fas fa-minus"></i>
+        </div>
+
+        <div class="breakdown-value">
+            {{ report.medium_count }}
+        </div>
+
+        <div class="breakdown-label">
+            Medium Engagement
+        </div>
+
+        <div class="breakdown-pct">
+            {{ "%.1f"|format(report.medium_percentage) }}%
+        </div>
+
+        <div class="breakdown-bar">
+
+            <div class="breakdown-fill">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- LOW -->
+
+    <div class="breakdown-card breakdown-low">
+
+        <div class="breakdown-icon">
+            <i class="fas fa-arrow-trend-down"></i>
+        </div>
+
+        <div class="breakdown-value">
+            {{ report.low_count }}
+        </div>
+
+        <div class="breakdown-label">
+            Low Engagement
+        </div>
+
+        <div class="breakdown-pct">
+            {{ "%.1f"|format(report.low_percentage) }}%
+        </div>
+
+        <div class="breakdown-bar">
+
+            <div class="breakdown-fill">
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- STUDENT ENGAGEMENT RESULTS -->
+
+{% if face_data %}
+
+<div class="table-card">
+
+    <div class="table-header">
+
+        <h3>
+            <i class="fas fa-id-card"></i>
+            Student Engagement Results
+        </h3>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Student ID
+                    </th>
+
+                    <th>
+                        Face
+                    </th>
+
+                    <th>
+                        Engagement Score
+                    </th>
+
+                    <th>
+                        Engagement Level
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for face in face_data %}
+
+                <tr>
+
+
+                    <!-- STUDENT ID -->
+
+                    <td>
+
+                        <strong>
+                            Student {{ face.face_id }}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- FACE -->
+
+                    <td>
+
+                        {% if face.crop_path %}
+
+                        <img
+                            src="{{ url_for('monitoring.serve_crop', filename=face.crop_path) }}"
+                            alt="Student face"
+                            class="face-thumb"
+                        >
+
+                        {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- SCORE -->
+
+                    <td>
+
+                        <div class="score-display">
+
+                            <span class="score-value">
+                                {{ "%.1f"|format(face.engagement_score) }}%
+                            </span>
+
+                            <div class="score-bar-mini">
+
+                                <div class="score-fill-mini">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- LEVEL -->
+
+                    <td>
+
+                        {% if face.status == "High" %}
+
+                            <span class="badge badge-success">
+                                High
+                            </span>
+
+                        {% elif face.status == "Medium" %}
+
+                            <span class="badge badge-warning">
+                                Medium
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-danger">
+                                Low
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIVE STATUS -->
+
+                    <td>
+
+                        {% if face.is_active %}
+
+                            <span class="badge badge-success">
+
+                                <i class="fas fa-circle"></i>
+                                Active
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-danger">
+
+                                <i class="fas fa-circle"></i>
+                                Inactive
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+{% else %}
+
+
+<!-- REPORT NOT AVAILABLE -->
+
+<div class="empty-state">
+
+    <i class="fas fa-chart-pie"></i>
+
+    <h3>
+        Report not available
+    </h3>
+
+    <p>
+        This session has not completed analysis yet.
+    </p>
+
+</div>
+
+
+{% endif %}
+
+{% endblock %}

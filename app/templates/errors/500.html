@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}500 Server Error — EngageVision{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-icon-wrap error-500-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="error-code">500</div>
+    <h1 class="error-title">Internal Server Error</h1>
+    <p class="error-message">
+      Something went wrong on our end. Please try again in a moment.<br>
+      If the problem persists, contact your system administrator.
+    </p>
+    <div class="error-actions">
+      <a href="javascript:history.back()" class="btn btn-ghost">
+        <i class="fas fa-arrow-left"></i> Go Back
+      </a>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">
+        <i class="fas fa-th-large"></i> Admin Dashboard
+      </a>
+      {% elif session.get('role') == 'teacher' %}
+      <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+        <i class="fas fa-th-large"></i> My Dashboard
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+      {% endif %}
+    </div>
+    <p class="error-brand"><i class="fas fa-eye"></i> EngageVision</p>
+  </div>
+</div>
+{% endblock %}

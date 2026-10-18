@@ -1,0 +1,323 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+{{ 'Add' if action == 'add' else 'Edit' }} Section — EngageVision
+{% endblock %}
+
+{% block page_title %}
+{{ 'Add' if action == 'add' else 'Edit' }} Section
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div class="page-header__left">
+
+        <h1 class="page-header__title">
+            <i class="fa fa-{% if action == 'add' %}plus-circle{% else %}pencil{% endif %}"></i>
+
+            {{ 'Add New Section' if action == 'add' else 'Edit Section' }}
+        </h1>
+
+        <p class="page-header__subtitle">
+
+            {% if action == 'add' %}
+                Assign a new section to an existing class.
+            {% else %}
+                Update details for section
+                <strong>{{ section.section_name }}</strong>
+                of
+                <strong>{{ section.class_name }}</strong>.
+            {% endif %}
+
+        </p>
+
+    </div>
+
+    <div class="page-header__actions">
+
+        <a href="{{ url_for('admin.sections') }}"
+           class="btn btn-ghost">
+
+            <i class="fa fa-arrow-left"></i>
+            Back to Sections
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- FLASH MESSAGES -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="alert alert--{{ category }}">
+
+                <i class="fa
+                    {% if category == 'success' %}
+                        fa-check-circle
+                    {% elif category == 'danger' %}
+                        fa-exclamation-circle
+                    {% else %}
+                        fa-info-circle
+                    {% endif %}
+                "></i>
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+
+<div class="form-card">
+
+    <form method="POST"
+
+          action="{{
+              url_for('admin.add_section')
+              if action == 'add'
+              else url_for(
+                  'admin.edit_section',
+                  section_id=section.id
+              )
+          }}">
+
+
+        <!-- CLASS -->
+
+        <div class="form-group">
+
+            <label for="class_id" class="form-label">
+
+                <i class="fa fa-book"></i>
+
+                Class
+
+                <span class="form-label__required">*</span>
+
+            </label>
+
+
+            <select
+                id="class_id"
+                name="class_id"
+                class="form-input form-select"
+                required
+            >
+
+                <option value="" disabled
+                    {% if not form.get('class_id') %}
+                        selected
+                    {% endif %}
+                >
+                    — Select a Class —
+                </option>
+
+
+                {% for c in classes %}
+
+<option value="{{ c.id }}"
+    {% if form.get('class_id')|int == c.id|int %}
+        selected
+    {% endif %}
+>
+    {{ c.class_name }}
+</option>
+                        {{ c.class_name }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            {% if not classes %}
+
+                <p class="form-hint form-hint--warning">
+
+                    <i class="fa fa-exclamation-triangle"></i>
+
+                    No classes available.
+
+                    <a href="{{ url_for('admin.add_class') }}">
+                        Add a class first.
+                    </a>
+
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+
+        <!-- SECTION NAME -->
+
+        <div class="form-group">
+
+            <label for="section_name" class="form-label">
+
+                <i class="fa fa-sitemap"></i>
+
+                Section Name
+
+                <span class="form-label__required">*</span>
+
+            </label>
+
+
+            <input
+                type="text"
+                id="section_name"
+                name="section_name"
+                class="form-input"
+
+                value="{{ form.get('section_name', '') }}"
+
+                placeholder="e.g. A, B, C"
+
+                maxlength="10"
+
+                required
+            >
+
+
+            <p class="form-hint">
+
+                Use a short identifier like A, B, or C.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- STUDENT COUNT + ROOM NUMBER -->
+
+        <div class="form-row">
+
+
+            <div class="form-group form-group--half">
+
+                <label
+                    for="student_count"
+                    class="form-label"
+                >
+
+                    <i class="fa fa-users"></i>
+
+                    Student Count
+
+                </label>
+
+
+                <input
+                    type="number"
+                    id="student_count"
+                    name="student_count"
+                    class="form-input"
+
+                    value="{{ form.get('student_count', 0) }}"
+
+                    min="0"
+                    step="1"
+
+                    placeholder="0"
+                >
+
+            </div>
+
+
+
+            <div class="form-group form-group--half">
+
+                <label
+                    for="room_number"
+                    class="form-label"
+                >
+
+                    <i class="fa fa-map-marker"></i>
+
+                    Room Number
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="room_number"
+                    name="room_number"
+                    class="form-input"
+
+                    value="{{ form.get('room_number', '') }}"
+
+                    placeholder="e.g. 101, Lab-3"
+
+                    maxlength="20"
+                >
+
+            </div>
+
+        </div>
+
+
+
+        <!-- BUTTONS -->
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+
+                {% if not classes %}
+                    disabled
+                {% endif %}
+            >
+
+                <i class="fa fa-save"></i>
+
+                {% if action == 'add' %}
+                    Create Section
+                {% else %}
+                    Save Changes
+                {% endif %}
+
+            </button>
+
+
+            <a
+                href="{{ url_for('admin.sections') }}"
+                class="btn btn-ghost"
+            >
+
+                <i class="fa fa-times"></i>
+
+                Cancel
+
+            </a>
+
+        </div>
+
+
+    </form>
+
+</div>
+
+{% endblock %}
+```

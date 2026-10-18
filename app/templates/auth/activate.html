@@ -1,0 +1,213 @@
+﻿{% extends 'base.html' %}
+{% block title %}Activate Your Account — ENGAGEVISION{% endblock %}
+
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;">
+<div style="background:#fff;border-radius:16px;padding:2.5rem 2rem;max-width:520px;width:100%;box-shadow:0 8px 32px rgba(18,59,93,.12);border:1px solid #e2e8f0;">
+
+  <!-- Header -->
+  <div style="text-align:center;margin-bottom:1.75rem;">
+    <div style="width:64px;height:64px;background:linear-gradient(135deg,#123b5d,#2563a6);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;margin-bottom:1rem;box-shadow:0 6px 20px rgba(18,59,93,.3);">
+      <i class="fas fa-user-check"></i>
+    </div>
+    <h1 style="font-size:1.5rem;font-weight:800;color:#123b5d;margin:0 0 .25rem;">Activate Your Account</h1>
+    <p style="font-size:.85rem;color:#6b7a99;margin:0;">ENGAGEVISION — Teacher Account Setup</p>
+  </div>
+
+  <!-- Welcome banner -->
+  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
+    <div style="display:flex;align-items:flex-start;gap:.65rem;">
+      <i class="fas fa-envelope-open-text" style="color:#2563a6;font-size:1.05rem;flex-shrink:0;margin-top:.1rem;"></i>
+      <div>
+        <div style="font-size:.82rem;font-weight:700;color:#1e40af;margin-bottom:.2rem;">Welcome, {{ teacher.first_name }} {{ teacher.last_name }}!</div>
+        <div style="font-size:.8rem;color:#374151;line-height:1.55;">
+          Choose your own username and password to activate your ENGAGEVISION teacher account.
+          Your credentials are private — not even the admin can see your password.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+  <div style="padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.84rem;
+    {% if cat == 'danger' %}background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;
+    {% elif cat == 'success' %}background:#f0fdf4;border:1px solid #86efac;color:#166534;
+    {% else %}background:#fffbeb;border:1px solid #fcd34d;color:#92400e;{% endif %}">
+    <i class="fas fa-{% if cat == 'danger' %}exclamation-circle{% elif cat == 'success' %}check-circle{% else %}info-circle{% endif %}" style="margin-right:.4rem;"></i>{{ msg }}
+  </div>
+  {% endfor %}
+  {% endwith %}
+
+  <form method="POST" id="activateForm" novalidate>
+
+    <!-- Username -->
+    <div style="margin-bottom:1.1rem;">
+      <label style="display:block;font-size:.83rem;font-weight:600;color:#374151;margin-bottom:.35rem;">
+        Choose Username <span style="color:#e53e3e;">*</span>
+      </label>
+      <input type="text" name="username" id="username" autocomplete="username"
+             class="form-input"
+             placeholder="e.g. priya_sharma"
+             onfocus="this.style.borderColor='#2563a6'" onblur="this.style.borderColor=''"
+             required />
+      <div style="font-size:.76rem;color:#6b7a99;margin-top:.3rem;">
+        Letters, numbers, and underscores only. At least 3 characters.
+      </div>
+      <div style="font-size:.76rem;color:#dc2626;margin-top:.2rem;display:none;" id="usernameErr"></div>
+    </div>
+
+    <!-- Password -->
+    <div style="margin-bottom:.9rem;">
+      <label style="display:block;font-size:.83rem;font-weight:600;color:#374151;margin-bottom:.35rem;">
+        Choose Password <span style="color:#e53e3e;">*</span>
+      </label>
+      <div class="input-with-toggle">
+        <input type="password" name="password" id="password" autocomplete="new-password"
+               class="form-input"
+               placeholder="Create a strong password"
+               oninput="checkStrength(this.value)" required />
+        <button type="button" class="toggle-password" onclick="toggleVis('password','eyePw')" aria-label="Toggle">
+          <i class="fas fa-eye" id="eyePw"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Strength bar -->
+    <div style="margin-bottom:.75rem;">
+      <div class="pw-strength" id="pwStrength" style="display:block;">
+        <div class="pw-strength-bar">
+          <div class="pw-strength-fill" id="pwStrengthFill"></div>
+        </div>
+        <span class="pw-strength-label" id="pwStrengthLabel"></span>
+      </div>
+    </div>
+
+    <!-- Password requirements -->
+    <div class="requirements" style="margin-bottom:1.1rem;">
+      <div class="req" id="req-len"><i class="fas fa-circle"></i> At least 8 characters</div>
+      <div class="req" id="req-up"><i class="fas fa-circle"></i> One uppercase letter (A-Z)</div>
+      <div class="req" id="req-low"><i class="fas fa-circle"></i> One lowercase letter (a-z)</div>
+      <div class="req" id="req-dig"><i class="fas fa-circle"></i> One digit (0-9)</div>
+    </div>
+
+    <!-- Confirm password -->
+    <div style="margin-bottom:1.5rem;">
+      <label style="display:block;font-size:.83rem;font-weight:600;color:#374151;margin-bottom:.35rem;">
+        Confirm Password <span style="color:#e53e3e;">*</span>
+      </label>
+      <div class="input-with-toggle">
+        <input type="password" name="confirm_password" id="confirm_password" autocomplete="new-password"
+               class="form-input"
+               placeholder="Repeat your password"
+               oninput="checkMatch()" required />
+        <button type="button" class="toggle-password" onclick="toggleVis('confirm_password','eyyCp')" aria-label="Toggle">
+          <i class="fas fa-eye" id="eyyCp"></i>
+        </button>
+      </div>
+      <span class="rp-field-error" id="matchErr" style="display:none;">Passwords do not match.</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:.85rem;">
+      <i class="fas fa-user-check"></i> Activate My Account
+    </button>
+
+  </form>
+
+  <p style="text-align:center;font-size:.78rem;color:#9ca3af;margin-top:1.25rem;">
+    Already activated?
+    <a href="{{ url_for('auth.login', role='teacher') }}" style="color:#2563a6;text-decoration:none;font-weight:600;">Sign in here</a>
+  </p>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleVis(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const ico = document.getElementById(iconId);
+  if (!inp || !ico) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    ico.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    ico.className = 'fas fa-eye';
+  }
+}
+
+function setReq(id, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.color = ok ? 'var(--c-success, #16a34a)' : '#9ca3af';
+  const ico = el.querySelector('i');
+  if (ico) {
+    ico.className = ok ? 'fas fa-check-circle' : 'fas fa-circle';
+  }
+}
+
+function checkStrength(val) {
+  const len = val.length >= 8;
+  const up  = /[A-Z]/.test(val);
+  const low = /[a-z]/.test(val);
+  const dig = /[0-9]/.test(val);
+  setReq('req-len', len);
+  setReq('req-up',  up);
+  setReq('req-low', low);
+  setReq('req-dig', dig);
+  const score  = [len, up, low, dig].filter(Boolean).length;
+  const bar    = document.getElementById('pwStrengthFill');
+  const label  = document.getElementById('pwStrengthLabel');
+  if (!bar || !label) return;
+  const colors = ['#dc2626','#f97316','#2563a6','#16a34a'];
+  const labels = ['Weak','Fair','Good','Strong'];
+  bar.style.width      = (score / 4 * 100) + '%';
+  bar.style.background = colors[score - 1] || '#e5e7eb';
+  label.textContent    = score > 0 ? labels[score - 1] : '';
+  label.style.color    = colors[score - 1] || '#9ca3af';
+  checkMatch();
+}
+
+function checkMatch() {
+  const pw  = document.getElementById('password').value;
+  const cf  = document.getElementById('confirm_password').value;
+  const err = document.getElementById('matchErr');
+  if (!err) return;
+  if (cf.length > 0) {
+    err.style.display = (pw !== cf) ? 'inline' : 'none';
+  }
+}
+
+document.getElementById('activateForm').addEventListener('submit', function(e) {
+  const username = document.getElementById('username').value.trim();
+  const pw  = document.getElementById('password').value;
+  const cf  = document.getElementById('confirm_password').value;
+  let ok = true;
+
+  const uErr = document.getElementById('usernameErr');
+  if (!username || username.length < 3) {
+    uErr.textContent = 'Username must be at least 3 characters.';
+    uErr.style.display = 'block';
+    ok = false;
+  } else if (!/^[A-Za-z0-9_]+$/.test(username)) {
+    uErr.textContent = 'Username may only contain letters, numbers, and underscores.';
+    uErr.style.display = 'block';
+    ok = false;
+  } else {
+    uErr.style.display = 'none';
+  }
+
+  if (!pw || pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/[0-9]/.test(pw)) {
+    ok = false;
+  }
+  if (pw !== cf) {
+    document.getElementById('matchErr').style.display = 'inline';
+    ok = false;
+  }
+  if (!ok) e.preventDefault();
+});
+</script>
+{% endblock %}

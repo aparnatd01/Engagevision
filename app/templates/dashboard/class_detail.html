@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}{{ cls.class_name }} — Students{% endblock %}
+{% block page_title %}{{ cls.class_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('dashboard.classes') }}" class="btn btn-ghost btn-sm" style="margin-bottom:.75rem;">
+    <i class="fas fa-arrow-left"></i> Back to Classes
+  </a>
+  <h1>{{ cls.class_name }}</h1>
+  <p>
+    {% if cls.section %}Section {{ cls.section }} &nbsp;·&nbsp; {% endif %}
+    {% if cls.semester %}Semester {{ cls.semester }} &nbsp;·&nbsp; {% endif %}
+    {{ cls.academic_year or '' }}
+  </p>
+</div>
+
+<div class="card">
+  <div class="card-header-bar">
+    <h3><i class="fas fa-users"></i> Enrolled Students</h3>
+    <a href="{{ url_for('dashboard.attendance', class_id=cls.id) }}" class="btn btn-navy btn-sm">
+      <i class="fas fa-calendar-check"></i> Mark Attendance
+    </a>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if students %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student Name</th>
+            <th>Register Number</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Enrolled On</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ s.first_name }} {{ s.last_name }}</strong></td>
+            <td><code>{{ s.register_number or '—' }}</code></td>
+            <td>{{ s.username }}</td>
+            <td>{{ s.email }}</td>
+            <td>{{ s.enrolled_at.strftime('%d %b %Y') if s.enrolled_at else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fas fa-user-graduate" aria-hidden="true"></i></div>
+      <h3>No Students Enrolled</h3>
+      <p>Students can enroll by selecting this class from their dashboard.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

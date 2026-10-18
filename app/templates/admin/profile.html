@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Admin Profile — EngageVision{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+  <!-- Profile Info Card -->
+  <div class="profile-card">
+    <div class="profile-avatar-section">
+      <div class="profile-avatar">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div>
+        <h2>{{ admin.first_name }} {{ admin.last_name }}</h2>
+        <span class="user-role-badge role-admin">ADMINISTRATOR</span>
+        <p class="text-muted mt-1">{{ admin.email }}</p>
+      </div>
+    </div>
+
+    <div class="profile-details">
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-user"></i> Username</span>
+        <span class="detail-value">{{ admin.username }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-envelope"></i> Email</span>
+        <span class="detail-value">{{ admin.email }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-shield-alt"></i> Role</span>
+        <span class="detail-value">Administrator</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-calendar"></i> Member Since</span>
+        <span class="detail-value">{{ admin.created_at.strftime('%d %B %Y') if admin.created_at else 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-clock"></i> Last Login</span>
+        <span class="detail-value">{{ admin.last_signed_in.strftime('%d %b %Y, %I:%M %p') if admin.last_signed_in else 'N/A' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Card -->
+  <div class="form-card">
+    <div class="form-card-header">
+      <h3><i class="fas fa-key"></i> Change Password</h3>
+    </div>
+    <form method="POST" action="{{ url_for('admin.change_password') }}" id="pwForm">
+      <div class="form-group">
+        <label class="form-label required">Current Password</label>
+        <input type="password" name="current_password" class="form-input"
+               placeholder="Enter your current password" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label required">New Password</label>
+        <input type="password" name="new_password" id="newPw" class="form-input"
+               placeholder="Min 8 chars, 1 uppercase, 1 lowercase, 1 number" required />
+        <span class="form-hint">At least 8 characters, one uppercase, one lowercase, one digit.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label required">Confirm New Password</label>
+        <input type="password" name="confirm_password" id="confirmPw" class="form-input"
+               placeholder="Repeat new password" required />
+        <span class="field-error" id="pwMatchError"></span>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Update Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('pwForm').addEventListener('submit', function(e) {
+  const np = document.getElementById('newPw').value;
+  const cp = document.getElementById('confirmPw').value;
+  const err = document.getElementById('pwMatchError');
+  err.textContent = '';
+  if (np !== cp) {
+    err.textContent = 'Passwords do not match.';
+    e.preventDefault();
+  }
+});
+</script>
+{% endblock %}

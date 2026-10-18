@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Admin Reports — EngageVision{% endblock %}
+{% block page_title %}All Monitoring Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-chart-bar"></i> All Reports</h1>
+    <p class="page-subtitle">View and download engagement reports across all classes</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-card">
+  <form method="GET" action="{{ url_for('admin.reports') }}" id="adminReportFilterForm">
+    <div class="filter-grid">
+      <div class="form-group">
+        <label class="form-label" for="from_date">From Date <span class="req" style="color:var(--c-danger-light, #e53e3e);">*</span></label>
+        <input type="date" name="from_date" id="from_date" class="form-input form-control" required value="{{ filters.from_date }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="to_date">To Date <span class="req" style="color:var(--c-danger-light, #e53e3e);">*</span></label>
+        <input type="date" name="to_date" id="to_date" class="form-input form-control" required value="{{ filters.to_date }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teacher</label>
+        <select name="teacher_id" class="form-select form-control">
+          <option value="">All Teachers</option>
+          {% for t in teachers %}
+          <option value="{{ t.id }}" {% if filters.teacher_id|string == t.id|string %}selected{% endif %}>
+            {{ t.first_name }} {{ t.last_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="filterClass">Class</label>
+        <select name="class_id" class="form-select form-control" id="filterClass">
+          <option value="">All Classes</option>
+          {% for c in classes %}
+          <option value="{{ c.id }}" {% if filters.class_id|string == c.id|string %}selected{% endif %}>
+            {{ c.class_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="filterSection">Section</label>
+        <select name="section_id" class="form-select form-control" id="filterSection">
+          <option value="">All Sections</option>
+          {% for s in sections %}
+          <option value="{{ s.id }}" {% if filters.section_id|string == s.id|string %}selected{% endif %}>
+            {{ s.section_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-actions" style="grid-column: 1 / -1; display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-top:0.25rem;">
+        <button type="submit" formaction="{{ url_for('admin.reports') }}" class="btn btn-primary" title="Filter sessions on this page">
+          <i class="fas fa-search"></i> Filter Table
+        </button>
+        <button type="submit" formaction="{{ url_for('admin.download_weekly_report') }}" class="btn btn-outline" title="Download Weekly Report as PDF with selected filters">
+          <i class="fas fa-file-pdf"></i> Download Weekly Report
+        </button>
+        <button type="submit" formaction="{{ url_for('admin.download_monthly_report') }}" class="btn btn-outline" title="Download Monthly Report as PDF with selected filters">
+          <i class="fas fa-file-pdf"></i> Download Monthly Report
+        </button>
+        <a href="{{ url_for('admin.reports') }}" class="btn btn-ghost">Reset</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Reports Table -->
+<div class="table-card">
+  <div class="table-header">
+    <h3><i class="fas fa-table"></i> Monitoring Sessions ({{ sessions|length }} results)</h3>
+  </div>
+  {% if sessions %}
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Teacher</th>
+          <th>Class / Section</th>
+          <th>Date</th>
+          <th>Faces</th>
+          <th>Active</th>
+          <th>Inactive</th>
+          <th>Overall Eng%</th>
+          <th>High</th>
+          <th>Medium</th>
+          <th>Low</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>
+            <strong>{{ s.first_name }} {{ s.last_name }}</strong>
+          </td>
+          <td>
+            <span class="class-badge">{{ s.class_name or '—' }}</span>
+            <span class="section-badge">{{ s.section_name or '—' }}</span>
+          </td>
+          <td>{{ s.session_date or (s.created_at.strftime('%d %b %Y') if s.created_at else '—') }}</td>
+          <td><strong>{{ s.total_faces or 0 }}</strong></td>
+          <td><span class="text-success"><strong>{{ s.active_count or 0 }}</strong></span></td>
+          <td><span class="text-danger"><strong>{{ s.inactive_count or 0 }}</strong></span></td>
+          <td>
+            {% if s.overall_percentage %}
+            <div class="engagement-bar">
+              <div class="engagement-fill {% if s.overall_percentage >= 70 %}fill-high{% elif s.overall_percentage >= 40 %}fill-medium{% else %}fill-low{% endif %}"
+                   style="width:{{ s.overall_percentage }}%"></div>
+            </div>
+            <strong>{{ "%.1f"|format(s.overall_percentage) }}%</strong>
+            {% else %}<span class="text-muted">N/A</span>{% endif %}
+          </td>
+          <td><span class="badge badge-success">{{ s.high_count or 0 }}</span></td>
+          <td><span class="badge badge-warning">{{ s.medium_count or 0 }}</span></td>
+          <td><span class="badge badge-danger">{{ s.low_count or 0 }}</span></td>
+          <td>
+            <span class="status-badge status-{{ s.status }}">{{ s.status|title }}</span>
+          </td>
+          <td class="table-actions">
+            {% if s.status == 'completed' %}
+            <a href="{{ url_for('reports.detail', session_id=s.id) }}" class="btn btn-sm btn-outline" title="View Report">
+              <i class="fas fa-eye"></i>
+            </a>
+            <a href="{{ url_for('reports.download', session_id=s.id) }}" class="btn btn-sm btn-secondary" title="Download PDF">
+              <i class="fas fa-file-pdf"></i>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-chart-bar"></i>
+    <h3>No reports found</h3>
+    <p>No monitoring sessions match the selected filters.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const classSelect = document.getElementById('filterClass');
+  const sectionSelect = document.getElementById('filterSection');
+  const filterForm = document.getElementById('adminReportFilterForm');
+  const currentSectionId = "{{ filters.section_id or '' }}";
+
+  if (classSelect && sectionSelect) {
+    classSelect.addEventListener('change', function() {
+      const classId = this.value;
+      sectionSelect.innerHTML = '<option value="">All Sections</option>';
+
+      if (!classId) {
+        return;
+      }
+
+      fetch('{{ url_for("admin.api_sections", class_id=0) }}'.replace('0', classId))
+        .then(function(res) {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
+        .then(function(sections) {
+          sections.forEach(function(sec) {
+            const opt = document.createElement('option');
+            opt.value = sec.id;
+            opt.textContent = sec.name;
+            if (currentSectionId && String(sec.id) === String(currentSectionId)) {
+              opt.selected = true;
+            }
+            sectionSelect.appendChild(opt);
+          });
+        })
+        .catch(function(err) {
+          console.error('Failed to load sections:', err);
+        });
+    });
+  }
+
+  if (filterForm) {
+    filterForm.addEventListener('submit', function(e) {
+      const fromD = document.getElementById('from_date').value;
+      const toD = document.getElementById('to_date').value;
+      if (fromD && toD && fromD > toD) {
+        e.preventDefault();
+        alert('From Date cannot be later than To Date.');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% block title %}Report Detail — EngageVision{% endblock %}
+{% block page_title %}Session Report{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-chart-bar"></i> Engagement Report</h1>
+    <p class="page-subtitle">
+      {{ db_session.class_name or 'Unknown Class' }} &mdash;
+      Section {{ db_session.section_name or 'N/A' }}
+      &nbsp;|&nbsp;
+      {% if db_session.first_name %}
+        <i class="fas fa-user"></i> {{ db_session.first_name }} {{ db_session.last_name }}
+      {% endif %}
+    </p>
+  </div>
+  <div class="header-actions">
+    {% if report %}
+    <a href="{{ url_for('admin.download_report', session_id=db_session.id) }}"
+       class="btn btn-primary">
+      <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+    {% endif %}
+    <a href="{{ url_for('admin.reports') }}" class="btn btn-ghost">
+      <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+  </div>
+</div>
+
+<!-- Session Info -->
+<div class="dashboard-row" style="margin-bottom: 1.5rem;">
+  <div class="table-card" style="flex:1;">
+    <div class="table-header">
+      <h3><i class="fas fa-info-circle"></i> Session Details</h3>
+      <span class="badge badge-{% if db_session.status == 'completed' %}success{% elif db_session.status == 'processing' %}warning{% elif db_session.status == 'failed' %}danger{% else %}info{% endif %}">
+        {{ db_session.status | title }}
+      </span>
+    </div>
+    <div class="card-body" style="padding: 1.25rem;">
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-tag"></i> Session Name</span>
+        <span class="detail-value">{{ db_session.session_name or 'Unnamed Session' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-book"></i> Class</span>
+        <span class="detail-value">{{ db_session.class_name or '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-layer-group"></i> Section</span>
+        <span class="detail-value">{{ db_session.section_name or '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-calendar"></i> Date</span>
+        <span class="detail-value">{{ db_session.session_date or '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-video"></i> Video</span>
+        <span class="detail-value">{{ db_session.video_filename or '—' }}</span>
+      </div>
+      {% if db_session.duration_seconds %}
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-clock"></i> Duration</span>
+        <span class="detail-value">{{ (db_session.duration_seconds // 60) }}m {{ (db_session.duration_seconds % 60) }}s</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if report %}
+<!-- Engagement Stats -->
+<div class="stats-grid" style="margin-bottom: 1.5rem;">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.total_faces }}</div>
+      <div class="stat-label">Total Faces</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.active_count }}</div>
+      <div class="stat-label">Active</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i class="fas fa-circle-xmark"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.inactive_count }}</div>
+      <div class="stat-label">Inactive</div>
+    </div>
+  </div>
+  <div class="stat-card stat-teal">
+    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.overall_percentage }}%</div>
+      <div class="stat-label">Overall Engagement</div>
+    </div>
+  </div>
+</div>
+
+<!-- Engagement Breakdown -->
+<div class="dashboard-row">
+  <div class="chart-card" style="flex:1;">
+    <div class="card-header">
+      <h3><i class="fas fa-chart-donut"></i> Engagement Distribution</h3>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="engagementChart" aria-label="Engagement distribution" role="img"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>High ({{ report.high_percentage }}%)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#d97706;"></span>Medium ({{ report.medium_percentage }}%)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span>Low ({{ report.low_percentage }}%)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card engagement-summary-card" style="flex:1;">
+    <div class="card-header">
+      <h3><i class="fas fa-bar-chart"></i> Engagement Levels</h3>
+    </div>
+    <div class="card-body">
+      <div style="display:flex; flex-direction:column; gap:1rem; padding: 1rem 0;">
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+            <span class="text-success fw-600"><i class="fas fa-circle"></i> High Engagement</span>
+            <strong>{{ report.high_count }} students</strong>
+          </div>
+          <div style="background:#e5e7eb; border-radius:4px; height:8px;">
+            <div style="background:#16a34a; width:{{ report.high_percentage }}%; height:100%; border-radius:4px; transition:width 0.8s ease;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+            <span class="text-warning fw-600"><i class="fas fa-circle"></i> Medium Engagement</span>
+            <strong>{{ report.medium_count }} students</strong>
+          </div>
+          <div style="background:#e5e7eb; border-radius:4px; height:8px;">
+            <div style="background:#d97706; width:{{ report.medium_percentage }}%; height:100%; border-radius:4px; transition:width 0.8s ease;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+            <span class="text-danger fw-600"><i class="fas fa-circle"></i> Low Engagement</span>
+            <strong>{{ report.low_count }} students</strong>
+          </div>
+          <div style="background:#e5e7eb; border-radius:4px; height:8px;">
+            <div style="background:#dc2626; width:{{ report.low_percentage }}%; height:100%; border-radius:4px; transition:width 0.8s ease;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if face_data %}
+<!-- Per-face Results -->
+<div class="table-card" style="margin-top:1.5rem;">
+  <div class="table-header">
+    <h3><i class="fas fa-table"></i> Student Engagement Results</h3>
+    <span class="badge badge-info">{{ face_data | length }} students detected</span>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Face</th>
+          <th>Engagement Score</th>
+          <th>Engagement Level</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for face in face_data %}
+        {% set sid = face.face_id if face.face_id is defined else (face.face_index if face.face_index is defined else loop.index) %}
+        {% set score_val = face.engagement_score if face.engagement_score is defined else (face.score|float if face.score is defined else 0.0) %}
+        {% set lvl = face.status if face.status is defined and face.status in ['High', 'Medium', 'Low'] else (face.level if face.level is defined else 'Low') %}
+        <tr>
+          <td><strong>Student {{ sid }}</strong></td>
+          <td>
+            {% if face.crop_path %}
+            <img src="{{ url_for('monitoring.serve_crop', filename=face.crop_path.replace('crops/', '', 1)) }}"
+                 alt="Student {{ sid }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:2px solid {% if lvl == 'High' %}#16a34a{% elif lvl == 'Medium' %}#d97706{% else %}#dc2626{% endif %};"
+                 onerror="this.style.display='none'" />
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="background:#e5e7eb; border-radius:4px; width:80px; height:6px; flex-shrink:0;">
+                <div style="background:{% if (score_val|float) >= 70 %}#16a34a{% elif (score_val|float) >= 40 %}#d97706{% else %}#dc2626{% endif %}; width:{{ score_val }}%; height:100%; border-radius:4px;"></div>
+              </div>
+              <strong>{{ "%.1f"|format(score_val|float) }}%</strong>
+            </div>
+          </td>
+          <td>
+            {% if lvl == 'High' %}
+            <span class="badge badge-success"><i class="fas fa-circle"></i> High</span>
+            {% elif lvl == 'Medium' %}
+            <span class="badge badge-warning"><i class="fas fa-circle"></i> Medium</span>
+            {% else %}
+            <span class="badge badge-danger"><i class="fas fa-circle"></i> Low</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if face.is_active %}
+            <span class="badge badge-success"><i class="fas fa-circle"></i> Active</span>
+            {% else %}
+            <span class="badge badge-danger"><i class="fas fa-circle"></i> Inactive</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- No Report Available -->
+<div class="empty-state" style="margin-top: 1.5rem;">
+  <i class="fas fa-hourglass-half"></i>
+  <h3>No engagement report yet</h3>
+  <p>This monitoring session has not been processed yet. Status: <strong>{{ db_session.status | title }}</strong></p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if report %}
+<script>
+(function() {
+  const hi = {{ report.high_percentage | float }};
+  const me = {{ report.medium_percentage | float }};
+  const lo = {{ report.low_percentage | float }};
+  const hasData = (hi + me + lo) > 0;
+
+  const ctx = document.getElementById('engagementChart');
+  if (!ctx) return;
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['High', 'Medium', 'Low'],
+      datasets: [{
+        data: hasData ? [hi, me, lo] : [33, 33, 34],
+        backgroundColor: hasData
+          ? ['#16a34a', '#d97706', '#dc2626']
+          : ['#e5e7eb', '#e5e7eb', '#e5e7eb'],
+        borderColor: '#fff',
+        borderWidth: 3,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: hasData,
+          callbacks: { label: c => ` ${c.label}: ${c.parsed.toFixed(1)}%` }
+        }
+      },
+      animation: { duration: 900, easing: 'easeInOutQuart' }
+    }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

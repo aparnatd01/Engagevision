@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/main/packages/pyright/schemas/pyrightconfig.schema.json",
+
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows",
+
+  "venvPath": ".",
+  "pythonPath": "C:\\Users\\APARNA\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+
+  "include": [
+    "app",
+    "run.py",
+    "setup_teacher.py"
+  ],
+
+  "exclude": [
+    "**/__pycache__",
+    "**/*.pyc"
+  ],
+
+  "typeCheckingMode": "off",
+
+  "reportMissingModuleSource": "none",
+  "reportMissingTypeStubs": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownParameterType": "none",
+  "reportOptionalSubscript": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportGeneralTypeIssues": "none",
+  "reportIndexIssue": "none",
+  "reportReturnType": "none",
+  "reportOperatorIssue": "none",
+
+  "useLibraryCodeForTypes": true
+}

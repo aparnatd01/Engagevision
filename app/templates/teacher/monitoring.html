@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}AI Monitoring - EngageVision{% endblock %}
+
+{% block page_title %}Monitoring{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">AI Classroom Monitoring</h2>
+        <p class="text-muted">
+            Upload a classroom video to analyze student engagement.
+        </p>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-3">
+                Upload Classroom Video
+            </h5>
+
+            <form
+                action="{{ url_for('monitoring.upload_video') }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                {# ── Session metadata ────────────────────────────── #}
+                {% if assignments %}
+                <div class="mb-3">
+                    <label for="assignment_id" class="form-label fw-semibold">
+                        Class &amp; Section
+                    </label>
+                    <select class="form-select" id="assignment_id" name="assignment_id" required>
+                        <option value="" disabled {% if assignments|length != 1 %}selected{% endif %}>
+                            — Select your class —
+                        </option>
+                        {% for a in assignments %}
+                        <option value="{{ a.id }}"
+                            {% if assignments|length == 1 %}selected{% endif %}>
+                            {{ a.class_name }} / Section {{ a.section_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    You have no class assignments yet. Please ask your admin to assign you to a class.
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="session_name" class="form-label fw-semibold">
+                        Session Name <small class="text-muted">(optional)</small>
+                    </label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="session_name"
+                        name="session_name"
+                        placeholder="e.g. Morning Lecture — Unit 3"
+                        maxlength="200"
+                    >
+                </div>
+
+                <div class="mb-3">
+                    <label for="video" class="form-label fw-semibold">
+                        Select Video
+                    </label>
+
+                    <input
+                        type="file"
+                        class="form-control"
+                        id="video"
+                        name="video"
+                        accept=".mp4,.avi,.mov,.mkv,.webm"
+                        required
+                    >
+
+                    <small class="text-muted">
+                        Supported formats: MP4, AVI, MOV, MKV, WEBM
+                    </small>
+                </div>
+
+                {% if assignments %}
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="processBtn"
+                >
+                    <i class="bi bi-camera-video"></i>
+                    Start AI Monitoring
+                </button>
+                {% endif %}
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.querySelector("form").addEventListener("submit", function () {
+
+    const btn = document.getElementById("processBtn");
+
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Processing Video...
+    `;
+});
+</script>
+
+{% endblock %}

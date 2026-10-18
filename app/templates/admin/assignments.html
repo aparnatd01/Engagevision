@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Assignments — EngageVision{% endblock %}
+{% block page_title %}Teacher Assignments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-link"></i> Teacher Assignments</h1>
+    <p class="page-subtitle">Assign teachers to class and section combinations</p>
+  </div>
+</div>
+
+<div class="two-col-layout">
+  <!-- Add Assignment Form -->
+  <div class="form-card">
+    <div class="form-card-header">
+      <h3><i class="fas fa-plus-circle"></i> New Assignment</h3>
+    </div>
+    <form method="POST" action="{{ url_for('admin.add_assignment') }}" id="assignForm">
+      <div class="form-group">
+        <label class="form-label required">Teacher</label>
+        <select name="teacher_id" class="form-select" id="assignTeacher" required>
+          <option value="">— Select Teacher —</option>
+          {% for t in teachers %}
+          {% if t.is_active %}
+          <option value="{{ t.id }}">{{ t.first_name }} {{ t.last_name }}{% if t.staff_id %} ({{ t.staff_id }}){% endif %}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label required">Class</label>
+        <select name="class_id" class="form-select" id="assignClass" required>
+          <option value="">— Select Class —</option>
+          {% for c in classes %}
+          {% if c.is_active %}
+          <option value="{{ c.id }}">{{ c.class_name }}{% if c.course_code %} ({{ c.course_code }}){% endif %}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label required">Section</label>
+        <select name="section_id" class="form-select" id="assignSection" required disabled>
+          <option value="">— Select Class first —</option>
+        </select>
+        <span class="form-hint">Section options load after selecting a class</span>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-link"></i> Assign Teacher
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Assignments Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3><i class="fas fa-table"></i> Current Assignments ({{ assignments|length }})</h3>
+    </div>
+    {% if assignments %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Teacher</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Students</th>
+            <th>Assigned</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in assignments %}
+          <tr>
+            <td>
+              <strong>{{ a.first_name }} {{ a.last_name }}</strong>
+              {% if a.staff_id %}<br><small class="text-muted">{{ a.staff_id }}</small>{% endif %}
+            </td>
+            <td>
+              <span class="class-badge">{{ a.class_name }}</span>
+              {% if a.course_code %}<br><small class="text-muted">{{ a.course_code }}</small>{% endif %}
+            </td>
+            <td><span class="section-badge">{{ a.section_name }}</span></td>
+            <td><strong>{{ a.student_count }}</strong></td>
+            <td><small>{{ a.assigned_at.strftime('%d %b %Y') if a.assigned_at else '—' }}</small></td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.remove_assignment', assignment_id=a.id) }}"
+                    onsubmit="return confirm('Remove this assignment?')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <i class="fas fa-unlink"></i> Remove
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-link"></i>
+      <h3>No assignments yet</h3>
+      <p>Use the form to assign a teacher to a class and section.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('assignClass').addEventListener('change', function() {
+  const classId = this.value;
+  const secSel  = document.getElementById('assignSection');
+  secSel.innerHTML = '<option value="">Loading…</option>';
+  secSel.disabled  = true;
+
+  if (!classId) {
+    secSel.innerHTML = '<option value="">— Select Class first —</option>';
+    return;
+  }
+
+  fetch(`/admin/api/sections/${classId}`)
+    .then(r => r.json())
+    .then(data => {
+      secSel.innerHTML = '<option value="">— Select Section —</option>';
+      data.forEach(s => {
+        secSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+      });
+      secSel.disabled = false;
+    })
+    .catch(() => {
+      secSel.innerHTML = '<option value="">Error loading sections</option>';
+    });
+});
+</script>
+{% endblock %}

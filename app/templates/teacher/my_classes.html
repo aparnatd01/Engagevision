@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}My Classes — EngageVision{% endblock %}
+{% block page_title %}My Classes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-chalkboard"></i> My Classes</h1>
+    <p class="page-subtitle">Classes and sections assigned to you by the administrator</p>
+  </div>
+</div>
+
+{% if assignments %}
+<div class="assignment-grid assignment-grid-full">
+  {% for a in assignments %}
+  <div class="assignment-card assignment-card-lg">
+    <div class="assignment-header">
+      <div class="assignment-icon"><i class="fas fa-book-open"></i></div>
+      <div>
+        <h3>{{ a.class_name }}</h3>
+        {% if a.course_code %}
+        <span class="badge badge-info">{{ a.course_code }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="assignment-details">
+      <div class="assignment-detail">
+        <i class="fas fa-layer-group"></i>
+        <span>Section <strong>{{ a.section_name }}</strong></span>
+      </div>
+      <div class="assignment-detail">
+        <i class="fas fa-users"></i>
+        <span><strong>{{ a.student_count }}</strong> Students</span>
+      </div>
+      {% if a.room_number %}
+      <div class="assignment-detail">
+        <i class="fas fa-door-open"></i>
+        <span>Room <strong>{{ a.room_number }}</strong></span>
+      </div>
+      {% endif %}
+      {% if a.semester %}
+      <div class="assignment-detail">
+        <i class="fas fa-graduation-cap"></i>
+        <span>{{ a.semester }}</span>
+      </div>
+      {% endif %}
+    </div>
+    <div class="assignment-footer">
+      <span class="badge badge-success"><i class="fas fa-circle"></i> Active</span>
+      <a href="{{ url_for('monitoring.index') }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-play-circle"></i> Start Monitoring
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state empty-state-lg">
+  <div class="empty-icon"><i class="fas fa-chalkboard"></i></div>
+  <h3>No Classes Assigned Yet</h3>
+  <p>The administrator has not assigned you to any class or section yet.</p>
+  <p class="text-muted">Please contact the administrator to get your class assignments set up.</p>
+</div>
+{% endif %}
+{% endblock %}

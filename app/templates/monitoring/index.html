@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% block title %}Start Monitoring — EngageVision{% endblock %}
+{% block page_title %}Engagement Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-video"></i> Start Engagement Monitoring</h1>
+    <p class="page-subtitle">Upload a classroom video to begin AI-powered engagement analysis</p>
+  </div>
+</div>
+
+<!-- Upload Form -->
+<div class="monitoring-layout">
+  <div class="upload-card" id="uploadCard">
+    <div class="upload-card-header">
+      <h3><i class="fas fa-upload"></i> Upload Classroom Video</h3>
+    </div>
+
+    <!-- Step 1: Session Info -->
+    <div class="upload-step" id="step1">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <h4>Select Class &amp; Section</h4>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label class="form-label required">Class</label>
+          <select id="classSelect" class="form-select" required>
+            <option value="">— Select Class —</option>
+            {% for c in teacher_classes %}
+            <option value="{{ c.id }}">{{ c.class_name }}{% if c.course_code %} ({{ c.course_code }}){% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Section</label>
+          <select id="sectionSelect" class="form-select" required disabled>
+            <option value="">— Select Class first —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label class="form-label required">Session Date</label>
+          <input type="date" id="sessionDate" class="form-input"
+                 value="{{ now.strftime('%Y-%m-%d') if now is defined else '' }}" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Session Name</label>
+          <input type="text" id="sessionName" class="form-input"
+                 placeholder="e.g. Database Lecture — Week 3" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Video Upload -->
+    <div class="upload-step" id="step2">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <h4>Upload Video File</h4>
+      </div>
+      <div class="upload-dropzone" id="uploadDropzone">
+        <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <div class="dropzone-text">
+          <strong>Drag &amp; drop your video here</strong>
+          <span>or click to browse</span>
+        </div>
+        <p class="dropzone-hint">Supported: MP4, AVI, MOV, MKV, WEBM &nbsp;|&nbsp; Max: 500 MB</p>
+        <input type="file" id="videoInput" accept=".mp4,.avi,.mov,.mkv,.webm" style="display:none" />
+      </div>
+      <div id="fileInfo" class="file-info" style="display:none">
+        <i class="fas fa-film"></i>
+        <span id="fileName"></span>
+        <span id="fileSize" class="text-muted"></span>
+        <button type="button" onclick="clearFile()" class="btn-icon" aria-label="Remove file">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Upload & Analyze -->
+    <div class="upload-step" id="step3">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <h4>Analyze Engagement</h4>
+      </div>
+      <button type="button" id="uploadBtn" class="btn btn-primary btn-lg btn-full" onclick="startUpload()" disabled>
+        <i class="fas fa-play-circle"></i> Upload &amp; Start Analysis
+      </button>
+    </div>
+
+    <!-- Upload Progress -->
+    <div id="uploadProgress" style="display:none" class="progress-section">
+      <div class="progress-label">
+        <span id="progressLabel">Uploading video…</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <p id="progressSub" class="text-muted text-sm">Please wait, do not close this page.</p>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="info-panel">
+    <div class="info-card">
+      <h4><i class="fas fa-info-circle"></i> How It Works</h4>
+      <ol class="info-steps">
+        <li>Select your assigned class and section</li>
+        <li>Choose the session date</li>
+        <li>Upload a classroom video file</li>
+        <li>EngageVision AI analyzes engagement</li>
+        <li>View detailed results with face scores</li>
+        <li>Download PDF engagement report</li>
+      </ol>
+    </div>
+    <div class="info-card">
+      <h4><i class="fas fa-brain"></i> AI Technology</h4>
+      <ul class="info-list">
+        <li><i class="fas fa-check text-success"></i> YOLOv8 Face Detection</li>
+        <li><i class="fas fa-check text-success"></i> MediaPipe FaceMesh</li>
+        <li><i class="fas fa-check text-success"></i> Eye Aspect Ratio (EAR)</li>
+        <li><i class="fas fa-check text-success"></i> Head Pose Estimation</li>
+        <li><i class="fas fa-check text-success"></i> Mouth Openness Analysis</li>
+        <li><i class="fas fa-check text-success"></i> High / Medium / Low Classification</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h4><i class="fas fa-shield-alt"></i> Privacy</h4>
+      <p class="text-sm text-muted">
+        EngageVision detects and analyzes faces but does NOT identify individual students.
+        Face Recognition is a future enhancement.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
+<script>
+// Inject today's date
+document.getElementById('sessionDate').value = new Date().toISOString().split('T')[0];
+
+// Dynamic section loading
+document.getElementById('classSelect').addEventListener('change', function() {
+  const classId = this.value;
+  const secSel  = document.getElementById('sectionSelect');
+  secSel.innerHTML = '<option value="">Loading…</option>';
+  secSel.disabled  = true;
+
+  if (!classId) {
+    secSel.innerHTML = '<option value="">— Select Class first —</option>';
+    checkReady();
+    return;
+  }
+
+  fetch(`/teacher/api/my-sections/${classId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.length === 0) {
+        secSel.innerHTML = '<option value="">No sections available</option>';
+      } else {
+        secSel.innerHTML = '<option value="">— Select Section —</option>';
+        data.forEach(s => {
+          secSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        });
+        secSel.disabled = false;
+      }
+      checkReady();
+    });
+});
+
+document.getElementById('sectionSelect').addEventListener('change', checkReady);
+document.getElementById('sessionDate').addEventListener('change', checkReady);
+
+// Dropzone
+const dropzone = document.getElementById('uploadDropzone');
+const input    = document.getElementById('videoInput');
+
+dropzone.addEventListener('click', () => input.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragging');
+  const files = e.dataTransfer.files;
+  if (files.length) handleFile(files[0]);
+});
+input.addEventListener('change', () => { if (input.files.length) handleFile(input.files[0]); });
+
+function handleFile(file) {
+  const allowed = ['mp4','avi','mov','mkv','webm'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!allowed.includes(ext)) {
+    alert('Invalid file type. Please use MP4, AVI, MOV, MKV, or WEBM.');
+    return;
+  }
+  if (file.size > 500 * 1024 * 1024) {
+    alert('File is too large. Maximum size is 500 MB.');
+    return;
+  }
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = '(' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
+  document.getElementById('fileInfo').style.display = 'flex';
+  dropzone.style.display = 'none';
+  checkReady();
+}
+
+function clearFile() {
+  input.value = '';
+  document.getElementById('fileInfo').style.display = 'none';
+  dropzone.style.display = 'flex';
+  checkReady();
+}
+
+function checkReady() {
+  const hasClass   = document.getElementById('classSelect').value;
+  const hasSection = document.getElementById('sectionSelect').value;
+  const hasDate    = document.getElementById('sessionDate').value;
+  const hasFile    = input.files && input.files.length > 0;
+  document.getElementById('uploadBtn').disabled = !(hasClass && hasSection && hasDate && hasFile);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}403 Forbidden — EngageVision{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-icon-wrap error-403-icon">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <div class="error-code">403</div>
+    <h1 class="error-title">Access Denied</h1>
+    <p class="error-message">
+      You do not have permission to view this page.<br>
+      Contact your administrator if you believe this is an error.
+    </p>
+    <div class="error-actions">
+      <a href="javascript:history.back()" class="btn btn-ghost">
+        <i class="fas fa-arrow-left"></i> Go Back
+      </a>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">
+        <i class="fas fa-th-large"></i> Admin Dashboard
+      </a>
+      {% elif session.get('role') == 'teacher' %}
+      <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+        <i class="fas fa-th-large"></i> My Dashboard
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+      {% endif %}
+    </div>
+    <p class="error-brand"><i class="fas fa-eye"></i> EngageVision</p>
+  </div>
+</div>
+{% endblock %}

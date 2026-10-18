@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Engagement Results - EngageVision{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">AI Engagement Results</h2>
+            <p class="text-muted mb-0">
+                Classroom video analysis completed.
+            </p>
+        </div>
+
+        <a href="{{ url_for('monitoring.index') }}"
+           class="btn btn-outline-primary">
+            Analyze Another Video
+        </a>
+    </div>
+
+
+    <!-- Processed Video -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header fw-bold">
+            Processed Classroom Video
+        </div>
+
+        <div class="card-body">
+
+            {% if result.output_path %}
+
+                {% set video_file =
+                    result.output_path.replace('\\', '/').split('/')[-1]
+                %}
+
+                <video
+                    controls
+                    width="100%"
+                    style="max-height: 600px; background: #000;"
+                >
+                    <source
+                        src="{{ url_for('monitoring.uploaded_file',
+                                        filename=video_file) }}"
+                        type="video/mp4"
+                    >
+
+                    Your browser does not support video playback.
+                </video>
+
+            {% else %}
+
+                <div class="alert alert-warning">
+                    Processed video is not available.
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+
+    <!-- Student Results -->
+    <div class="card shadow-sm">
+
+        <div class="card-header fw-bold">
+            Student-wise Engagement
+        </div>
+
+        <div class="card-body">
+
+            {% if result.students %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Face</th>
+                                <th>Engagement Score</th>
+                                <th>Engagement Level</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        {% for student in result.students %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        Student {{ student.student_id }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {% if student.crop_path %}
+                                    {% set crop_file = student.crop_path.replace('\\', '/').split('crops/')[-1] if 'crops/' in student.crop_path.replace('\\', '/') else student.crop_path.replace('\\', '/').split('/')[-1] %}
+                                    <img src="{{ url_for('monitoring.serve_crop', filename=crop_file) }}"
+                                         alt="Student {{ student.student_id }}"
+                                         style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:2px solid {% if student.level == 'High' %}#198754{% elif student.level == 'Medium' %}#ffc107{% else %}#dc3545{% endif %};"
+                                         onerror="this.style.display='none'" />
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td style="min-width: 150px;">
+
+                                    <strong>
+                                        {{ "%.1f"|format(student.engagement_pct) }}%
+                                    </strong>
+
+                                    <div class="progress mt-1"
+                                         style="height: 7px;">
+
+                                       <div
+    class="progress-bar engagement-bar {% if student.level == 'High' %}bg-success{% elif student.level == 'Medium' %}bg-warning{% else %}bg-danger{% endif %}"
+    role="progressbar"
+    data-engagement="{{ student.engagement_pct }}"
+    style="width: {{ student.engagement_pct }}%;"
+    aria-valuenow="{{ student.engagement_pct }}"
+    aria-valuemin="0"
+    aria-valuemax="100"
+></div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if student.level == "High" %}
+
+                                        <span class="badge bg-success">
+                                            High Engagement
+                                        </span>
+
+                                    {% elif student.level == "Medium" %}
+
+                                        <span class="badge bg-warning text-dark">
+                                            Medium Engagement
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-danger">
+                                            Low Engagement
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="alert alert-info">
+                    No student engagement data available.
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+<script>
+document.querySelectorAll(".engagement-bar").forEach(function (bar) {
+    const percentage = parseFloat(bar.dataset.engagement);
+
+    if (!isNaN(percentage)) {
+        bar.style.width = percentage + "%";
+    }
+});
+</script>
+
+{% endblock %}

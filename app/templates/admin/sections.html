@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Sections — EngageVision{% endblock %}
+{% block page_title %}Manage Sections{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-header__title">
+      <i class="fa fa-sitemap"></i> Manage Sections
+    </h1>
+    <p class="page-header__subtitle">View and manage all class sections across the institution</p>
+  </div>
+  <div class="page-header__actions">
+    <a href="{{ url_for('admin.add_section') }}" class="btn btn-primary">
+      <i class="fa fa-plus"></i> Add Section
+    </a>
+  </div>
+</div>
+
+{# ── Stats Pills ── #}
+{% set total    = sections | length %}
+{% set active   = sections | selectattr('is_active') | list | length %}
+{% set inactive = total - active %}
+
+<div class="stat-pills">
+  <div class="stat-pill">
+    <span class="stat-pill__label">Total</span>
+    <span class="stat-pill__value">{{ total }}</span>
+  </div>
+  <div class="stat-pill stat-pill--success">
+    <span class="stat-pill__label">Active</span>
+    <span class="stat-pill__value">{{ active }}</span>
+  </div>
+  <div class="stat-pill stat-pill--muted">
+    <span class="stat-pill__label">Inactive</span>
+    <span class="stat-pill__value">{{ inactive }}</span>
+  </div>
+</div>
+
+{# ── Flash Messages ── #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert--{{ category }}">
+        <i class="fa fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{# ── Filter Bar (optional class filter) ── #}
+{% if classes %}
+<div class="filter-bar">
+  <label for="classFilter" class="form-label">
+    <i class="fa fa-filter"></i> Filter by Class:
+  </label>
+  <select id="classFilter" class="form-select form-select--inline" onchange="filterByClass(this.value)">
+    <option value="">All Classes</option>
+    {% for c in classes %}
+      <option value="{{ c.class_name }}">{{ c.class_name }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endif %}
+
+{# ── Data Table ── #}
+<div class="form-card">
+  {% if sections %}
+  <div class="table-responsive">
+    <table class="data-table" id="sectionsTable">
+      <thead>
+        <tr>
+          <th><i class="fa fa-book"></i> Class</th>
+          <th><i class="fa fa-sitemap"></i> Section</th>
+          <th><i class="fa fa-users"></i> Students</th>
+          <th><i class="fa fa-map-marker"></i> Room</th>
+          <th><i class="fa fa-circle"></i> Status</th>
+          <th><i class="fa fa-chalkboard-teacher"></i> Assigned Teacher</th>
+          <th class="text-center"><i class="fa fa-cogs"></i> Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for section in sections %}
+        {% set assignments = section_assignments.get(section.id, []) %}
+        <tr data-class="{{ section.class_name }}">
+          <td>
+            <span class="fw-semibold">{{ section.class_name }}</span>
+          </td>
+          <td>
+            <span class="badge badge-secondary">{{ section.section_name }}</span>
+          </td>
+          <td>
+            <i class="fa fa-user"></i> {{ section.student_count }}
+          </td>
+          <td>{{ section.room_number or '—' }}</td>
+          <td>
+            {% if section.is_active %}
+              <span class="badge badge-success">
+                <i class="fa fa-check-circle"></i> Active
+              </span>
+            {% else %}
+              <span class="badge badge-secondary">
+                <i class="fa fa-times-circle"></i> Inactive
+              </span>
+            {% endif %}
+          </td>
+
+          {# ── Assigned Teacher Column ── #}
+          <td>
+            {% if assignments %}
+              {# Show each assigned teacher with a remove button #}
+              {% for a in assignments %}
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <span class="badge badge-info" style="font-size:.82rem;">
+                  <i class="fa fa-user-tie"></i>
+                  {{ a.first_name }} {{ a.last_name }}
+                  {% if a.staff_id %}<small>({{ a.staff_id }})</small>{% endif %}
+                </span>
+                <form method="POST"
+                      action="{{ url_for('admin.remove_section_assignment', assignment_id=a.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Remove {{ a.first_name }} {{ a.last_name }} from this section?')">
+                  <button type="submit"
+                          class="btn btn-ghost btn--sm"
+                          title="Remove assignment"
+                          style="color:#ef4444; padding:2px 6px; font-size:.75rem;">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </form>
+              </div>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted" style="font-size:.82rem; font-style:italic;">
+                No teacher assigned
+              </span>
+            {% endif %}
+
+            {# ── Assign Teacher Inline Form ── #}
+            {% if teachers and section.is_active %}
+            <form method="POST"
+                  action="{{ url_for('admin.assign_teacher_to_section', section_id=section.id) }}"
+                  style="display:flex; align-items:center; gap:4px; margin-top:6px;"
+                  class="assign-form">
+              <select name="teacher_id"
+                      class="form-select"
+                      required
+                      style="font-size:.8rem; padding:4px 8px; min-width:140px; max-width:200px;">
+                <option value="">— Assign —</option>
+                {% for t in teachers %}
+                <option value="{{ t.id }}">
+                  {{ t.first_name }} {{ t.last_name }}{% if t.staff_id %} ({{ t.staff_id }}){% endif %}
+                </option>
+                {% endfor %}
+              </select>
+              <button type="submit"
+                      class="btn btn-primary btn--sm"
+                      style="font-size:.75rem; padding:4px 10px;"
+                      title="Assign teacher">
+                <i class="fa fa-plus"></i> Assign
+              </button>
+            </form>
+            {% endif %}
+          </td>
+
+          <td>
+            <div class="action-group">
+              <a href="{{ url_for('admin.edit_section', section_id=section.id) }}"
+                 class="btn btn-ghost btn--sm"
+                 title="Edit Section">
+                <i class="fa fa-pencil"></i> Edit
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fa fa-sitemap empty-state__icon"></i>
+    <h3 class="empty-state__title">No Sections Found</h3>
+    <p class="empty-state__text">Add a section to an existing class to get started.</p>
+    <a href="{{ url_for('admin.add_section') }}" class="btn btn-primary">
+      <i class="fa fa-plus"></i> Add Section
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Client-side class filter ── #}
+<script>
+  function filterByClass(className) {
+    const rows = document.querySelectorAll('#sectionsTable tbody tr');
+    rows.forEach(function(row) {
+      if (!className || row.dataset.class === className) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}

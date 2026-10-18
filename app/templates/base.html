@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ENGAGEVISION{% endblock %} — AI Engagement Monitor</title>
+  <meta name="description" content="ENGAGEVISION — AI-Based Student Engagement Monitoring System Using Computer Vision" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js (for future engagement charts) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  {% block head %}{% endblock %}
+</head>
+<body class="{{ 'auth-layout' if not session.get('user_id') else 'app-layout' }}">
+
+{% set is_admin   = session.get('role') == 'admin' %}
+{% set is_teacher = session.get('role') == 'teacher' %}
+{% set logged_in  = session.get('user_id') %}
+
+{% if logged_in %}
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fas fa-eye"></i></div>
+    <div>
+      <span class="brand-name">ENGAGEVISION</span>
+      <span class="brand-sub">AI Engagement Monitor</span>
+    </div>
+  </div>
+
+  <!-- User Info -->
+  <div class="sidebar-user">
+    <div class="user-avatar">
+      <i class="fas fa-{{ 'user-shield' if is_admin else 'chalkboard-teacher' }}"></i>
+    </div>
+    <div class="user-info">
+      <span class="user-name">{{ session.get('full_name', 'User')[:22] }}</span>
+      <span class="user-role-badge role-{{ session.get('role','') }}">
+        {{ 'Administrator' if is_admin else 'Teacher' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    {% if is_admin %}
+    <!-- ADMIN NAVIGATION -->
+    <div class="nav-section-label">Management</div>
+    <a href="{{ url_for('admin.dashboard') }}"
+       class="nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fas fa-th-large"></i><span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('admin.teachers') }}"
+       class="nav-item {% if request.endpoint in ['admin.teachers','admin.add_teacher','admin.edit_teacher','admin.view_teacher'] %}active{% endif %}">
+      <i class="fas fa-users"></i><span>Teachers</span>
+    </a>
+    <a href="{{ url_for('admin.classes') }}"
+       class="nav-item {% if request.endpoint in ['admin.classes','admin.add_class','admin.edit_class'] %}active{% endif %}">
+      <i class="fas fa-book"></i><span>Classes</span>
+    </a>
+    <a href="{{ url_for('admin.sections') }}"
+       class="nav-item {% if request.endpoint in ['admin.sections','admin.add_section','admin.edit_section'] %}active{% endif %}">
+      <i class="fas fa-layer-group"></i><span>Sections</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:1.25rem">Reports</div>
+    <a href="{{ url_for('admin.reports') }}"
+       class="nav-item {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+      <i class="fas fa-chart-bar"></i><span>All Reports</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:1.25rem">Account</div>
+    <a href="{{ url_for('admin.profile') }}"
+       class="nav-item {% if request.endpoint == 'admin.profile' %}active{% endif %}">
+      <i class="fas fa-user-circle"></i><span>My Profile</span>
+    </a>
+
+    {% elif is_teacher %}
+    <!-- TEACHER NAVIGATION -->
+    <!-- NOTE: Start Monitoring is NOT in the sidebar. It is a dashboard button only. -->
+    <div class="nav-section-label">Teaching</div>
+    <a href="{{ url_for('dashboard.index') }}"
+       class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+      <i class="fas fa-th-large"></i><span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('dashboard.my_classes') }}"
+       class="nav-item {% if request.endpoint == 'dashboard.my_classes' %}active{% endif %}">
+      <i class="fas fa-chalkboard"></i><span>My Classes</span>
+    </a>
+
+    <a href="{{ url_for('monitoring.index') }}"
+   class="nav-item {% if request.endpoint and request.endpoint.startswith('monitoring.') %}active{% endif %}">
+  <i class="fas fa-video"></i><span>Monitoring</span>
+</a>
+
+    <div class="nav-section-label" style="margin-top:1.25rem">Reports</div>
+    <a href="{{ url_for('dashboard.reports') }}"
+       class="nav-item {% if request.endpoint == 'dashboard.reports' %}active{% endif %}">
+      <i class="fas fa-file-alt"></i><span>My Reports</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:1.25rem">Account</div>
+    <a href="{{ url_for('dashboard.profile') }}"
+       class="nav-item {% if request.endpoint == 'dashboard.profile' %}active{% endif %}">
+      <i class="fas fa-user-circle"></i><span>My Profile</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+    </a>
+    <div class="sidebar-copyright">ENGAGEVISION &copy; 2024</div>
+  </div>
+</aside>
+
+<!-- Mobile overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+{% endif %}
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<main class="main-content {% if not logged_in %}full-width{% endif %}" id="mainContent">
+
+  {% if logged_in %}
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="topbar-avatar">
+          <i class="fas fa-{{ 'user-shield' if is_admin else 'user' }}"></i>
+        </div>
+        <div class="topbar-user-info">
+          <span class="topbar-name">{{ session.get('full_name','User') }}</span>
+          <span class="topbar-role">{{ 'Administrator' if is_admin else 'Teacher' }}</span>
+        </div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="topbar-logout" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </header>
+  {% endif %}
+
+  <!-- Flash Messages (only for authenticated/dashboard pages) -->
+  {% if logged_in %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" id="flashContainer" role="alert">
+      {% for category, message in messages %}
+      <div class="flash-toast flash-{{ category }}">
+        <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+        <span>{{ message }}</span>
+        <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+  {% endif %}
+
+  <!-- Page Content -->
+  <div class="page-content" id="pageContent">
+    {% block content %}{% endblock %}
+  </div>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

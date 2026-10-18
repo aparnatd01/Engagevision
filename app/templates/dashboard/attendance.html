@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Attendance — {{ cls.class_name }}{% endblock %}
+{% block page_title %}Attendance{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('dashboard.class_detail', class_id=cls.id) }}" class="btn btn-ghost btn-sm" style="margin-bottom:.75rem;">
+    <i class="fas fa-arrow-left"></i> Back to Class
+  </a>
+  <h1>Attendance — {{ cls.class_name }}</h1>
+  <p>Mark attendance for enrolled students on any date.</p>
+</div>
+
+<div class="card">
+  <div class="card-header-bar">
+    <h3><i class="fas fa-calendar-check"></i> Mark / View Attendance</h3>
+    <!-- Date picker (GET navigation) -->
+    <form method="GET" action="{{ url_for('dashboard.attendance', class_id=cls.id) }}"
+          style="display:flex;gap:.5rem;align-items:center;">
+      <input type="date" name="date" class="form-control" style="width:auto;"
+             value="{{ selected_date }}" onchange="this.form.submit()"/>
+    </form>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if students %}
+    <form method="POST" action="{{ url_for('dashboard.attendance', class_id=cls.id) }}">
+      <input type="hidden" name="attendance_date" value="{{ selected_date }}"/>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Register No.</th>
+              <th>Status</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            {% set rec = records.get(s.id, {}) %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><strong>{{ s.first_name }} {{ s.last_name }}</strong></td>
+              <td>{{ s.register_number or '—' }}</td>
+              <td>
+                <select name="status_{{ s.id }}" class="form-control" style="width:auto;min-width:110px;">
+                  {% for st in ['present','absent','late'] %}
+                  <option value="{{ st }}" {% if rec.get('status', 'absent') == st %}selected{% endif %}>
+                    {{ st | capitalize }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <input type="text" name="remarks_{{ s.id }}" class="form-control"
+                       style="width:180px;" placeholder="Optional note"
+                       value="{{ rec.get('remarks') or '' }}"/>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:1rem 1.25rem;display:flex;justify-content:flex-end;">
+        <button type="submit" class="btn btn-navy">
+          <i class="fas fa-save"></i> Save Attendance
+        </button>
+      </div>
+    </form>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fas fa-user-graduate" aria-hidden="true"></i></div>
+      <h3>No Students Enrolled</h3>
+      <p>Students must enroll in this class before attendance can be marked.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

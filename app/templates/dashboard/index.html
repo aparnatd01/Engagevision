@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Dashboard — EngageVision{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Welcome back, {{ teacher.first_name }}! 👋</h1>
+    <p class="page-subtitle">
+      <i class="fas fa-calendar"></i>
+      {{ now.strftime('%A, %d %B %Y') }} &nbsp;|&nbsp;
+      <i class="fas fa-id-badge"></i>
+      {{ teacher.staff_id or 'N/A' }} &nbsp;|&nbsp;
+      <i class="fas fa-building"></i>
+      {{ teacher.department or 'N/A' }}
+    </p>
+  </div>
+  <a href="{{ url_for('monitoring.index') }}" class="btn btn-primary btn-lg">
+    <i class="fas fa-play-circle"></i> Start Engagement Monitoring
+  </a>
+</div>
+
+<!-- Assigned Classes/Sections -->
+<div class="section-block">
+  <h2 class="section-title"><i class="fas fa-chalkboard"></i> My Assigned Classes</h2>
+  {% if assignments %}
+  <div class="assignment-grid">
+    {% for a in assignments %}
+    <div class="assignment-card">
+      <div class="assignment-header">
+        <div class="assignment-icon"><i class="fas fa-book"></i></div>
+        <div>
+          <h4>{{ a.class_name }}</h4>
+          {% if a.course_code %}<small class="text-muted">{{ a.course_code }}</small>{% endif %}
+        </div>
+      </div>
+      <div class="assignment-details">
+        <div class="assignment-detail">
+          <i class="fas fa-layer-group"></i>
+          <span>Section <strong>{{ a.section_name }}</strong></span>
+        </div>
+        <div class="assignment-detail">
+          <i class="fas fa-users"></i>
+          <span><strong>{{ a.student_count }}</strong> Students</span>
+        </div>
+        {% if a.room_number %}
+        <div class="assignment-detail">
+          <i class="fas fa-door-open"></i>
+          <span>Room {{ a.room_number }}</span>
+        </div>
+        {% endif %}
+        {% if a.semester %}
+        <div class="assignment-detail">
+          <i class="fas fa-graduation-cap"></i>
+          <span>{{ a.semester }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <a href="{{ url_for('monitoring.index') }}" class="btn btn-outline btn-sm assignment-action">
+        <i class="fas fa-video"></i> Monitor This Class
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-chalkboard"></i>
+    <h3>No classes assigned yet</h3>
+    <p>Ask your administrator to assign you to a class and section.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Engagement Stats -->
+<h2 class="section-title" style="margin-top:2rem"><i class="fas fa-chart-pie"></i> Engagement Overview</h2>
+
+{% if stats.completed_sessions > 0 %}
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_faces }}</div>
+      <div class="stat-label">Total Faces Detected</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.active_count }}</div>
+      <div class="stat-label">Active Students</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.inactive_count }}</div>
+      <div class="stat-label">Inactive Students</div>
+    </div>
+  </div>
+  <div class="stat-card stat-teal">
+    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.avg_overall }}%</div>
+      <div class="stat-label">Overall Engagement</div>
+    </div>
+  </div>
+</div>
+
+<!-- Engagement Breakdown -->
+<div class="engagement-breakdown">
+  <div class="breakdown-card breakdown-high">
+    <div class="breakdown-icon"><i class="fas fa-arrow-trend-up"></i></div>
+    <div class="breakdown-value">{{ stats.avg_high }}%</div>
+    <div class="breakdown-label">High Engagement</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ stats.avg_high }}%"></div>
+    </div>
+  </div>
+  <div class="breakdown-card breakdown-medium">
+    <div class="breakdown-icon"><i class="fas fa-minus"></i></div>
+    <div class="breakdown-value">{{ stats.avg_medium }}%</div>
+    <div class="breakdown-label">Medium Engagement</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ stats.avg_medium }}%"></div>
+    </div>
+  </div>
+  <div class="breakdown-card breakdown-low">
+    <div class="breakdown-icon"><i class="fas fa-arrow-trend-down"></i></div>
+    <div class="breakdown-value">{{ stats.avg_low }}%</div>
+    <div class="breakdown-label">Low Engagement</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ stats.avg_low }}%"></div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-chart-pie"></i>
+  <h3>No monitoring data yet</h3>
+  <p>Upload a classroom video and run engagement analysis to see statistics.</p>
+  <a href="{{ url_for('monitoring.index') }}" class="btn btn-primary">
+    <i class="fas fa-play-circle"></i> Start Monitoring
+  </a>
+</div>
+{% endif %}
+
+<!-- Recent Sessions -->
+{% if recent_sessions %}
+<div class="section-block" style="margin-top:2rem">
+  <div class="section-header-row">
+    <h2 class="section-title"><i class="fas fa-history"></i> Recent Sessions</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-ghost btn-sm">View All</a>
+  </div>
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Date</th>
+            <th>Faces</th>
+            <th>Engagement</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in recent_sessions %}
+          <tr>
+            <td><strong>{{ s.session_name }}</strong></td>
+            <td>{{ s.class_name or '—' }}</td>
+            <td>{{ s.section_name or '—' }}</td>
+            <td>{{ s.session_date or '—' }}</td>
+            <td>{{ s.total_faces or '—' }}</td>
+            <td>
+              {% if s.overall_percentage %}
+              <span class="engagement-pct {% if s.overall_percentage >= 70 %}pct-high{% elif s.overall_percentage >= 40 %}pct-medium{% else %}pct-low{% endif %}">
+                {{ "%.1f"|format(s.overall_percentage) }}%
+              </span>
+              {% else %}—{% endif %}
+            </td>
+            <td><span class="status-badge status-{{ s.status }}">{{ s.status|title }}</span></td>
+            <td>
+              {% if s.status == 'completed' %}
+              <a href="{{ url_for('reports.detail', session_id=s.id) }}" class="btn btn-sm btn-outline">
+                <i class="fas fa-eye"></i> View
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

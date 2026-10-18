@@ -1,0 +1,16 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\APARNA\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none",
+    "reportMissingTypeStubs": "none"
+  },
+  "python.analysis.extraPaths": [
+    "C:\\Users\\APARNA\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages"
+  ],
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.terminal.activateEnvironment": true,
+  "files.associations": {
+    "*.html": "html"
+  }
+}

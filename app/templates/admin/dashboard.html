@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — EngageVision{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Welcome, {{ session.get('full_name', 'Administrator') }}! 👋</h2>
+    <p class="page-subtitle"><i class="fas fa-calendar-alt"></i> <span id="liveDate"></span></p>
+  </div>
+  <span class="system-badge"><i class="fas fa-shield-alt"></i> Admin Panel</span>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_teachers }}</div>
+      <div class="stat-label">Total Teachers</div>
+    </div>
+  </div>
+  <div class="stat-card stat-teal">
+    <div class="stat-icon"><i class="fas fa-book"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_classes }}</div>
+      <div class="stat-label">Total Classes</div>
+    </div>
+  </div>
+  <div class="stat-card stat-navy">
+    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_sections }}</div>
+      <div class="stat-label">Total Sections</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_students }}</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+  </div>
+  <div class="stat-card stat-indigo">
+    <div class="stat-icon"><i class="fas fa-video"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_sessions }}</div>
+      <div class="stat-label">Monitoring Sessions</div>
+    </div>
+  </div>
+</div>
+
+<!-- Engagement Distribution Chart (compact, matches Teacher Dashboard size) -->
+<div style="margin-top:1.5rem;">
+  <div style="
+    background:var(--c-card, #fff);
+    border:1px solid var(--c-border, #e5e7eb);
+    border-radius:var(--r-lg, 12px);
+    box-shadow:var(--shadow-card, 0 1px 4px rgba(0,0,0,.08));
+    overflow:hidden;
+    max-width:520px;
+  ">
+
+    <!-- Card Header -->
+    <div style="
+      padding:1rem 1.5rem;
+      border-bottom:1px solid var(--c-border, #e5e7eb);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    ">
+      <i class="fas fa-chart-donut" style="color:var(--c-secondary, #0e7490);"></i>
+      <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--c-primary, #0f2342);">
+        Engagement Distribution
+      </h3>
+    </div>
+
+    <!-- Card Body: chart + legend side-by-side (same layout as Teacher Dashboard) -->
+    <div style="padding:1.5rem;display:flex;align-items:center;justify-content:center;gap:2.5rem;flex-wrap:wrap;">
+
+      <!-- Doughnut canvas — fixed 220×220 to match Teacher Dashboard -->
+      <div style="width:220px;height:220px;position:relative;flex-shrink:0;">
+        <canvas
+          id="engagementChart"
+          aria-label="Engagement distribution chart"
+          role="img"
+        ></canvas>
+
+        <!-- Centre label -->
+        <div style="
+          position:absolute;top:50%;left:50%;
+          transform:translate(-50%,-50%);
+          text-align:center;pointer-events:none;
+        ">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--c-primary,#0f2342);line-height:1;">
+            {{ stats.avg_overall }}%
+          </div>
+          <div style="font-size:0.68rem;font-weight:600;color:var(--c-text-3,#94a3b8);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">
+            Overall
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:160px;">
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>
+          <span style="font-size:0.85rem;color:var(--c-text-2,#475569);flex:1;">High Engagement</span>
+          <span style="font-size:0.95rem;font-weight:700;color:var(--c-primary,#0f2342);">{{ stats.avg_high }}%</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#eab308;flex-shrink:0;"></span>
+          <span style="font-size:0.85rem;color:var(--c-text-2,#475569);flex:1;">Medium Engagement</span>
+          <span style="font-size:0.95rem;font-weight:700;color:var(--c-primary,#0f2342);">{{ stats.avg_medium }}%</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#f97316;flex-shrink:0;"></span>
+          <span style="font-size:0.85rem;color:var(--c-text-2,#475569);flex:1;">Low Engagement</span>
+          <span style="font-size:0.95rem;font-weight:700;color:var(--c-primary,#0f2342);">{{ stats.avg_low }}%</span>
+        </div>
+
+        {% if stats.completed_sessions > 0 %}
+        <div style="margin-top:4px;padding-top:10px;border-top:1px solid var(--c-border,#e5e7eb);font-size:0.78rem;color:var(--c-text-3,#94a3b8);">
+          <i class="fas fa-video" style="margin-right:4px;"></i>
+          Based on {{ stats.completed_sessions }} completed session{{ 's' if stats.completed_sessions != 1 else '' }}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Class / Section Engagement Overview Table -->
+<div class="table-card" style="margin-top:1.5rem;">
+  <div class="table-header">
+    <h3><i class="fas fa-table"></i> Class &amp; Section Engagement Overview</h3>
+    <span class="badge badge-info">{{ overview|length }} section(s)</span>
+  </div>
+  {% if overview %}
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Students</th>
+          <th>Sessions</th>
+          <th>Overall Eng%</th>
+          <th>High%</th>
+          <th>Medium%</th>
+          <th>Low%</th>
+          <th>Active</th>
+          <th>Inactive</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in overview %}
+        <tr>
+          <td><strong>{{ row.class_name }}</strong></td>
+          <td>{{ row.section_name }}</td>
+          <td>{{ row.student_count or 0 }}</td>
+          <td>{{ row.session_count or 0 }}</td>
+          <td>
+            {% set ov = row.avg_overall|round(1) %}
+            {% if ov >= 70 %}<span class="badge badge-success">{{ ov }}%</span>
+            {% elif ov >= 40 %}<span class="badge badge-warning">{{ ov }}%</span>
+            {% else %}<span class="badge badge-danger">{{ ov }}%</span>{% endif %}
+          </td>
+          <td><span class="badge badge-success">{{ row.avg_high|round(1) }}%</span></td>
+          <td><span class="badge badge-warning">{{ row.avg_medium|round(1) }}%</span></td>
+          <td><span class="badge badge-danger">{{ row.avg_low|round(1) }}%</span></td>
+          <td><span class="text-success"><strong>{{ row.total_active or 0 }}</strong></span></td>
+          <td><span class="text-danger"><strong>{{ row.total_inactive or 0 }}</strong></span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-chart-bar"></i>
+    <h3>No data yet</h3>
+    <p>Engagement data will appear here once monitoring sessions have been completed.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Live date
+document.getElementById('liveDate').textContent =
+  new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// Engagement Distribution — Doughnut Chart (real data from DB)
+(function() {
+  const ctx = document.getElementById('engagementChart');
+  if (!ctx) return;
+
+  const high   = {{ stats.avg_high }};
+  const medium = {{ stats.avg_medium }};
+  const low    = {{ stats.avg_low }};
+  const hasData = (high + medium + low) > 0;
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['High Engagement', 'Medium Engagement', 'Low Engagement'],
+      datasets: [{
+        data: hasData ? [high, medium, low] : [33, 33, 34],
+        backgroundColor: hasData ? ['#3b82f6', '#eab308', '#f97316'] : ['#e5e7eb', '#e5e7eb', '#e5e7eb'],
+        borderColor: '#fff', borderWidth: 3, hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: hasData,
+          backgroundColor: 'rgba(18, 59, 93, 0.92)',
+          titleFont: { family: "'Poppins', sans-serif", weight: '600', size: 13 },
+          bodyFont:  { family: "'Poppins', sans-serif", size: 12 },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: { label: c => ' ' + c.label + ': ' + c.parsed + '%' }
+        }
+      },
+      animation: { duration: 900, easing: 'easeInOutQuart' }
+    }
+  });
+})();
+</script>
+{% endblock %}

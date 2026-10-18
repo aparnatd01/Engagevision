@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — EngageVision{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+  <!-- Info Card -->
+  <div class="profile-card">
+    <div class="profile-avatar-section">
+      <div class="profile-avatar">
+        <i class="fas fa-chalkboard-teacher"></i>
+      </div>
+      <div>
+        <h2>{{ teacher.first_name }} {{ teacher.last_name }}</h2>
+        <span class="user-role-badge role-teacher">TEACHER</span>
+        <p class="text-muted mt-1">{{ teacher.email }}</p>
+      </div>
+    </div>
+    <div class="profile-details">
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-user"></i> Username</span>
+        <span class="detail-value">{{ teacher.username }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-id-badge"></i> Staff ID</span>
+        <span class="detail-value">{{ teacher.staff_id or 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-building"></i> Department</span>
+        <span class="detail-value">{{ teacher.department or 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-phone"></i> Phone</span>
+        <span class="detail-value">{{ teacher.phone or 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-calendar"></i> Member Since</span>
+        <span class="detail-value">{{ teacher.created_at.strftime('%d %B %Y') if teacher.created_at else 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label"><i class="fas fa-clock"></i> Last Login</span>
+        <span class="detail-value">{{ teacher.last_signed_in.strftime('%d %b %Y, %I:%M %p') if teacher.last_signed_in else 'N/A' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-forms">
+    <!-- Edit Profile -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.profile') }}">
+        <input type="hidden" name="action" value="update_profile" />
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label class="form-label required">First Name</label>
+            <input type="text" name="first_name" class="form-input"
+                   value="{{ teacher.first_name }}" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label required">Last Name</label>
+            <input type="text" name="last_name" class="form-input"
+                   value="{{ teacher.last_name }}" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Email</label>
+          <input type="email" name="email" class="form-input"
+                 value="{{ teacher.email }}" required />
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Department</label>
+            <input type="text" name="department" class="form-input"
+                   value="{{ teacher.department or '' }}" placeholder="e.g. Computer Science" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-input"
+                   value="{{ teacher.phone or '' }}" placeholder="+91 9876543210" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3><i class="fas fa-key"></i> Change Password</h3>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.change_password') }}" id="pwForm">
+        <div class="form-group">
+          <label class="form-label required">Current Password</label>
+          <input type="password" name="current_password" class="form-input"
+                 placeholder="Enter current password" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label required">New Password</label>
+          <input type="password" name="new_password" id="newPw" class="form-input"
+                 placeholder="Min 8 chars, 1 uppercase, 1 number" required />
+          <span class="form-hint">At least 8 characters, 1 uppercase letter, 1 digit.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Confirm New Password</label>
+          <input type="password" name="confirm_password" id="confirmPw" class="form-input"
+                 placeholder="Repeat new password" required />
+          <span class="field-error" id="pwMatchError"></span>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-lock"></i> Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('pwForm').addEventListener('submit', function(e) {
+  const np = document.getElementById('newPw').value;
+  const cp = document.getElementById('confirmPw').value;
+  const err = document.getElementById('pwMatchError');
+  err.textContent = '';
+  if (np !== cp) {
+    err.textContent = 'Passwords do not match.';
+    e.preventDefault();
+  }
+});
+</script>
+{% endblock %}

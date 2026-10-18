@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Teacher Account Setup</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family: 'Poppins', sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef4ff 0%,
+                    #f8fbff 50%,
+                    #eefaf7 100%
+                );
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px 15px;
+        }
+
+        .setup-wrapper {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .setup-card {
+            background: #ffffff;
+
+            border-radius: 20px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 15px 45px rgba(0, 0, 0, 0.10);
+
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-circle {
+            width: 72px;
+            height: 72px;
+
+            border-radius: 50%;
+
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #14b8a6
+            );
+
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin: 0 auto 18px;
+
+            font-size: 28px;
+        }
+
+        .title {
+            text-align: center;
+
+            font-size: 25px;
+
+            font-weight: 700;
+
+            color: #172033;
+
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #6b7280;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 14px;
+
+            font-weight: 700;
+
+            color: #374151;
+
+            margin-bottom: 15px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #374151;
+
+            margin-bottom: 7px;
+        }
+
+        .form-control {
+            height: 48px;
+
+            border-radius: 10px;
+
+            border: 1px solid #d9dee8;
+
+            font-size: 14px;
+
+            padding: 0 14px;
+
+            transition: 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px rgba(37, 99, 235, 0.10);
+        }
+
+        .input-group-text {
+            background: #f8fafc;
+
+            border: 1px solid #d9dee8;
+
+            border-right: 0;
+
+            border-radius: 10px 0 0 10px;
+
+            color: #64748b;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .staff-info {
+            background: #f0f7ff;
+
+            border: 1px solid #dbeafe;
+
+            border-radius: 10px;
+
+            padding: 12px 14px;
+
+            font-size: 12px;
+
+            color: #475569;
+
+            margin-bottom: 22px;
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box .form-control {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+
+            right: 14px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: none;
+
+            background: transparent;
+
+            color: #64748b;
+
+            cursor: pointer;
+
+            z-index: 5;
+        }
+
+        .password-rules {
+            margin-top: 10px;
+
+            padding: 12px;
+
+            background: #f8fafc;
+
+            border-radius: 10px;
+
+            border: 1px solid #e5e7eb;
+        }
+
+        .password-rule {
+            font-size: 12px;
+
+            margin-bottom: 5px;
+
+            color: #6b7280;
+
+            transition: 0.2s;
+        }
+
+        .password-rule:last-child {
+            margin-bottom: 0;
+        }
+
+        .password-rule.valid {
+            color: #16a34a;
+
+            font-weight: 600;
+        }
+
+        .password-rule.invalid {
+            color: #dc2626;
+        }
+
+        .setup-btn {
+            width: 100%;
+
+            height: 50px;
+
+            border: none;
+
+            border-radius: 11px;
+
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #14b8a6
+            );
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-top: 10px;
+
+            transition: 0.2s;
+        }
+
+        .setup-btn:hover {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.22);
+        }
+
+        .back-link {
+            display: block;
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            color: #2563eb;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 10px;
+
+            font-size: 13px;
+        }
+
+        .password-error {
+            color: #dc2626;
+
+            font-size: 12px;
+
+            margin-top: 7px;
+
+            display: none;
+        }
+
+        .match-message {
+            font-size: 12px;
+
+            margin-top: 7px;
+        }
+
+        @media (max-width: 500px) {
+
+            .setup-card {
+                padding: 25px 20px;
+            }
+
+            .title {
+                font-size: 22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="setup-wrapper">
+
+    <div class="setup-card">
+
+        <!-- Logo -->
+
+        <div class="logo-circle">
+
+            <i class="fas fa-chalkboard-teacher"></i>
+
+        </div>
+
+
+        <!-- Heading -->
+
+        <h1 class="title">
+            Teacher Account Setup
+        </h1>
+
+        <p class="subtitle">
+            Create your username and password to access
+            the EngageVision Teacher Portal.
+        </p>
+
+
+        <!-- Flash Messages -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+
+        <div class="alert alert-{{ category }}">
+
+            <i class="fas fa-{% if category == 'success' %}circle-check{% elif category == 'danger' %}circle-exclamation{% else %}circle-info{% endif %} me-2"></i>
+
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+        {% endwith %}
+
+        {% if error %}
+
+        <div class="alert alert-danger">
+
+            <i class="fas fa-circle-exclamation me-2"></i>
+
+            {{ error }}
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- Staff Information -->
+
+        <div class="staff-info">
+
+            <i class="fas fa-circle-info me-1"></i>
+
+            Enter the <strong>Staff ID</strong> provided by
+            your administrator. Your existing teacher profile
+            will be identified using this Staff ID.
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('auth.teacher_setup') }}"
+            id="teacherSetupForm"
+            novalidate
+        >
+
+            <!-- Staff ID -->
+
+            <div class="mb-3">
+
+                <label
+                    for="staff_id"
+                    class="form-label"
+                >
+                    Staff ID
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+
+                        <i class="fas fa-id-card"></i>
+
+                    </span>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="staff_id"
+                        name="staff_id"
+                        value="{{ form.get('staff_id', '') if form is mapping else (form.staff_id or '') }}"
+                        placeholder="Enter your Staff ID"
+                        maxlength="20"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Username -->
+
+            <div class="mb-3">
+
+                <label
+                    for="username"
+                    class="form-label"
+                >
+                    Create Username
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+
+                        <i class="fas fa-user"></i>
+
+                    </span>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        name="username"
+                        value="{{ form.get('username', '') if form is mapping else (form.username or '') }}"
+                        placeholder="Choose a username"
+                        maxlength="50"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+                <small
+                    class="text-muted"
+                    style="font-size: 11px;"
+                >
+                    Minimum 4 characters.
+                    Letters, numbers, underscore and dot are allowed.
+                </small>
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="mb-3">
+
+                <label
+                    for="password"
+                    class="form-label"
+                >
+                    Create Password
+                </label>
+
+                <div class="password-box">
+
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Create a strong password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="togglePassword('password', this)"
+                    >
+
+                        <i class="fas fa-eye"></i>
+
+                    </button>
+
+                </div>
+
+
+                <!-- Password rules -->
+
+                <div class="password-rules">
+
+                    <div
+                        class="password-rule"
+                        id="ruleLength"
+                    >
+                        <i class="fas fa-circle me-1"></i>
+                        Minimum 8 characters
+                    </div>
+
+                    <div
+                        class="password-rule"
+                        id="ruleUpper"
+                    >
+                        <i class="fas fa-circle me-1"></i>
+                        At least one uppercase letter (A-Z)
+                    </div>
+
+                    <div
+                        class="password-rule"
+                        id="ruleLower"
+                    >
+                        <i class="fas fa-circle me-1"></i>
+                        At least one lowercase letter (a-z)
+                    </div>
+
+                    <div
+                        class="password-rule"
+                        id="ruleNumber"
+                    >
+                        <i class="fas fa-circle me-1"></i>
+                        At least one number (0-9)
+                    </div>
+
+                    <div
+                        class="password-rule"
+                        id="ruleSpecial"
+                    >
+                        <i class="fas fa-circle me-1"></i>
+                        At least one special character (!@#$%^&*)
+                    </div>
+
+                </div>
+
+                <div
+                    id="passwordError"
+                    class="password-error"
+                ></div>
+
+            </div>
+
+
+            <!-- Confirm Password -->
+
+            <div class="mb-3">
+
+                <label
+                    for="confirm_password"
+                    class="form-label"
+                >
+                    Confirm Password
+                </label>
+
+                <div class="password-box">
+
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="confirm_password"
+                        name="confirm_password"
+                        placeholder="Re-enter your password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="togglePassword('confirm_password', this)"
+                    >
+
+                        <i class="fas fa-eye"></i>
+
+                    </button>
+
+                </div>
+
+                <div
+                    id="matchMessage"
+                    class="match-message"
+                ></div>
+
+            </div>
+
+
+            <!-- Submit -->
+
+            <button
+                type="submit"
+                class="setup-btn"
+                id="setupButton"
+            >
+
+                <i class="fas fa-user-check me-2"></i>
+
+                Create Teacher Account
+
+            </button>
+
+        </form>
+
+
+        <!-- Back -->
+
+        <a
+            href="{{ url_for('auth.login', role='teacher') }}"
+            class="back-link"
+        >
+
+            <i class="fas fa-arrow-left me-1"></i>
+
+            Back to Teacher Login
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ------------------------------------------
+    // Toggle password visibility
+    // ------------------------------------------
+
+    function togglePassword(inputId, button) {
+
+        const input = document.getElementById(inputId);
+
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+
+            input.type = 'text';
+
+            icon.classList.remove('fa-eye');
+
+            icon.classList.add('fa-eye-slash');
+
+        } else {
+
+            input.type = 'password';
+
+            icon.classList.remove('fa-eye-slash');
+
+            icon.classList.add('fa-eye');
+
+        }
+
+    }
+
+
+    // ------------------------------------------
+    // Password validation
+    // ------------------------------------------
+
+    const passwordInput =
+        document.getElementById('password');
+
+    const confirmPasswordInput =
+        document.getElementById('confirm_password');
+
+
+    function updateRule(elementId, valid) {
+
+        const element =
+            document.getElementById(elementId);
+
+        if (valid) {
+
+            element.classList.add('valid');
+
+            element.classList.remove('invalid');
+
+            const icon = element.querySelector('i');
+
+            icon.classList.remove('fa-circle');
+
+            icon.classList.add('fa-circle-check');
+
+        } else {
+
+            element.classList.remove('valid');
+
+            element.classList.add('invalid');
+
+            const icon = element.querySelector('i');
+
+            icon.classList.remove('fa-circle-check');
+
+            icon.classList.add('fa-circle');
+
+        }
+
+    }
+
+
+    function validatePassword() {
+
+        const value = passwordInput.value;
+
+        const lengthValid = value.length >= 8;
+
+        const upperValid = /[A-Z]/.test(value);
+
+        const lowerValid = /[a-z]/.test(value);
+
+        const numberValid = /[0-9]/.test(value);
+
+        const specialValid = /[!@#$%^&*]/.test(value);
+
+
+        updateRule(
+            'ruleLength',
+            lengthValid
+        );
+
+        updateRule(
+            'ruleUpper',
+            upperValid
+        );
+
+        updateRule(
+            'ruleLower',
+            lowerValid
+        );
+
+        updateRule(
+            'ruleNumber',
+            numberValid
+        );
+
+        updateRule(
+            'ruleSpecial',
+            specialValid
+        );
+
+
+        return (
+            lengthValid &&
+            upperValid &&
+            lowerValid &&
+            numberValid &&
+            specialValid
+        );
+
+    }
+
+
+    passwordInput.addEventListener(
+        'input',
+        function () {
+
+            validatePassword();
+
+            checkPasswordMatch();
+
+        }
+    );
+
+
+    // ------------------------------------------
+    // Confirm password validation
+    // ------------------------------------------
+
+    function checkPasswordMatch() {
+
+        const password =
+            passwordInput.value;
+
+        const confirm =
+            confirmPasswordInput.value;
+
+        const message =
+            document.getElementById('matchMessage');
+
+
+        if (!confirm) {
+
+            message.textContent = '';
+
+            return false;
+
+        }
+
+
+        if (password === confirm) {
+
+            message.textContent =
+                '✓ Passwords match';
+
+            message.style.color = '#16a34a';
+
+            return true;
+
+        } else {
+
+            message.textContent =
+                '✗ Passwords do not match';
+
+            message.style.color = '#dc2626';
+
+            return false;
+
+        }
+
+    }
+
+
+    confirmPasswordInput.addEventListener(
+        'input',
+        checkPasswordMatch
+    );
+
+
+    // ------------------------------------------
+    // Form submit validation
+    // ------------------------------------------
+
+    document
+        .getElementById('teacherSetupForm')
+        .addEventListener(
+            'submit',
+            function (event) {
+
+                const staffId =
+                    document.getElementById('staff_id')
+                    .value
+                    .trim();
+
+                const username =
+                    document.getElementById('username')
+                    .value
+                    .trim();
+
+                const passwordValid =
+                    validatePassword();
+
+                const passwordsMatch =
+                    checkPasswordMatch();
+
+
+                if (!staffId) {
+
+                    event.preventDefault();
+
+                    alert('Please enter your Staff ID.');
+
+                    return;
+
+                }
+
+
+                if (!username) {
+
+                    event.preventDefault();
+
+                    alert('Please enter a username.');
+
+                    return;
+
+                }
+
+
+                if (username.length < 4) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Username must contain at least 4 characters.'
+                    );
+
+                    return;
+
+                }
+
+
+                if (!passwordValid) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Please satisfy all password requirements.'
+                    );
+
+                    return;
+
+                }
+
+
+                if (!passwordsMatch) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Passwords do not match.'
+                    );
+
+                    return;
+
+                }
+
+            }
+        );
+
+
+</script>
+
+</body>
+
+</html>

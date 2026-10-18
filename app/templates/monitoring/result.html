@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Analysis Results — EngageVision{% endblock %}
+{% block page_title %}Engagement Results{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="fas fa-chart-pie"></i> Engagement Analysis Results</h1>
+    <p class="page-subtitle">
+      {{ db_session.class_name or '—' }} &bull; Section {{ db_session.section_name or '—' }}
+      {% if db_session.session_date %}&bull; {{ db_session.session_date }}{% endif %}
+    </p>
+  </div>
+  <div class="header-actions">
+    {% if db_session.status == 'completed' %}
+    <a href="{{ url_for('reports.detail', session_id=db_session.id) }}" class="btn btn-outline">
+      <i class="fas fa-file-alt"></i> View Report
+    </a>
+    <a href="{{ url_for('reports.download', session_id=db_session.id) }}" class="btn btn-primary">
+      <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+    {% endif %}
+    <a href="{{ url_for('monitoring.index') }}" class="btn btn-ghost">
+      <i class="fas fa-plus"></i> New Session
+    </a>
+  </div>
+</div>
+
+<!-- Status Banner -->
+{% if db_session.status == 'failed' %}
+<div class="alert alert-danger">
+  <i class="fas fa-exclamation-circle"></i>
+  Analysis failed. Please try uploading the video again.
+</div>
+{% endif %}
+
+{% if report %}
+<!-- Summary Stats -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.total_faces }}</div>
+      <div class="stat-label">Total Faces Detected</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.active_count }}</div>
+      <div class="stat-label">Active Students</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ report.inactive_count }}</div>
+      <div class="stat-label">Inactive Students</div>
+    </div>
+  </div>
+  <div class="stat-card stat-teal">
+    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ "%.1f"|format(report.overall_percentage) }}%</div>
+      <div class="stat-label">Overall Engagement</div>
+    </div>
+  </div>
+</div>
+
+<!-- Engagement Breakdown -->
+<div class="engagement-breakdown">
+  <div class="breakdown-card breakdown-high">
+    <div class="breakdown-icon"><i class="fas fa-arrow-trend-up"></i></div>
+    <div class="breakdown-value">{{ report.high_count }}</div>
+    <div class="breakdown-label">High Engagement</div>
+    <div class="breakdown-pct">{{ "%.1f"|format(report.high_percentage) }}%</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ report.high_percentage }}%"></div>
+    </div>
+  </div>
+  <div class="breakdown-card breakdown-medium">
+    <div class="breakdown-icon"><i class="fas fa-minus"></i></div>
+    <div class="breakdown-value">{{ report.medium_count }}</div>
+    <div class="breakdown-label">Medium Engagement</div>
+    <div class="breakdown-pct">{{ "%.1f"|format(report.medium_percentage) }}%</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ report.medium_percentage }}%"></div>
+    </div>
+  </div>
+  <div class="breakdown-card breakdown-low">
+    <div class="breakdown-icon"><i class="fas fa-arrow-trend-down"></i></div>
+    <div class="breakdown-value">{{ report.low_count }}</div>
+    <div class="breakdown-label">Low Engagement</div>
+    <div class="breakdown-pct">{{ "%.1f"|format(report.low_percentage) }}%</div>
+    <div class="breakdown-bar">
+      <div class="breakdown-fill" style="width:{{ report.low_percentage }}%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Face Cards -->
+{% if face_data %}
+<div class="section-block">
+  <h2 class="section-title"><i class="fas fa-id-card"></i> Individual Face Results</h2>
+  <div class="face-grid">
+    {% for face in face_data %}
+    <div class="face-card engagement-{{ face.status|lower }}">
+      <div class="face-img-wrap">
+        {% if face.crop_path %}
+        <img src="{{ url_for('monitoring.serve_crop', filename=face.crop_path.replace('crops/', '', 1)) }}"
+             alt="Student {{ face.face_id }}" class="face-img"
+             onerror="this.parentElement.innerHTML='<div class=face-placeholder><i class=fas fa-user></i></div>'" />
+        {% else %}
+        <div class="face-placeholder"><i class="fas fa-user"></i></div>
+        {% endif %}
+      </div>
+      <div class="face-info">
+        <div class="face-id">Student {{ face.face_id }}</div>
+        <div class="face-score">{{ face.engagement_score }}%</div>
+        <div class="face-status-badge engagement-badge-{{ face.status|lower }}">
+          {{ face.status }} Engagement
+        </div>
+        <div class="face-activity {% if face.is_active %}activity-active{% else %}activity-inactive{% endif %}">
+          <i class="fas fa-{{ 'circle' if face.is_active else 'circle-xmark' }}"></i>
+          {{ 'Active' if face.is_active else 'Inactive' }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+<!-- Session Meta -->
+<div class="session-meta-card">
+  <div class="meta-row">
+    <span><i class="fas fa-tag"></i> Session: <strong>{{ db_session.session_name }}</strong></span>
+    <span><i class="fas fa-clock"></i> Duration: <strong>
+      {% if db_session.duration_seconds %}
+        {{ db_session.duration_seconds // 60 }}m {{ db_session.duration_seconds % 60 }}s
+      {% else %}N/A{% endif %}
+    </strong></span>
+    <span><i class="fas fa-calendar"></i> Date: <strong>{{ db_session.session_date or '—' }}</strong></span>
+    <span><i class="fas fa-info-circle"></i> Status: <strong>{{ db_session.status|title }}</strong></span>
+  </div>
+</div>
+{% endblock %}

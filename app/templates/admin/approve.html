@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Approve Teachers — Admin{% endblock %}
+{% block page_title %}Teacher Approval{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Pending Teacher Approvals</h1>
+  <p>Review and approve or reject teacher registration requests.</p>
+</div>
+
+{% if pending %}
+<div class="card">
+  <div class="card-header-bar">
+    <h3><i class="fas fa-user-check"></i> Pending Requests ({{ pending | length }})</h3>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Staff ID</th><th>Department</th><th>Registered</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for t in pending %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ t.first_name }} {{ t.last_name }}</td>
+            <td>{{ t.username }}</td>
+            <td>{{ t.email }}</td>
+            <td>{{ t.staff_id or '—' }}</td>
+            <td>{{ t.department or '—' }}</td>
+            <td>{{ t.created_at.strftime('%d %b %Y') if t.created_at else '—' }}</td>
+            <td style="display:flex;gap:.5rem;flex-wrap:wrap;">
+              <form method="POST" action="{{ url_for('admin.approve_teacher', user_id=t.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.reject_teacher', user_id=t.id) }}" style="display:inline;"
+                    onsubmit="return confirm('Reject this teacher account?')">
+                <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="fas fa-check-double" aria-hidden="true"></i></div>
+    <h3>All Caught Up!</h3>
+    <p>There are no pending teacher approval requests at this time.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

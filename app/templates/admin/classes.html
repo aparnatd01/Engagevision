@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Classes — EngageVision{% endblock %}
+{% block page_title %}Manage Classes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-header__title">
+      <i class="fa fa-graduation-cap"></i> Manage Classes
+    </h1>
+    <p class="page-header__subtitle">Oversee all classes, their sections, and status</p>
+  </div>
+  <div class="page-header__actions">
+    <a href="{{ url_for('admin.add_class') }}" class="btn btn-primary">
+      <i class="fa fa-plus"></i> Add Class
+    </a>
+  </div>
+</div>
+
+{# ── Stats Pills ── #}
+{% set total    = classes | length %}
+{% set active   = classes | selectattr('is_active') | list | length %}
+{% set inactive = total - active %}
+
+<div class="stat-pills">
+  <div class="stat-pill">
+    <span class="stat-pill__label">Total</span>
+    <span class="stat-pill__value">{{ total }}</span>
+  </div>
+  <div class="stat-pill stat-pill--success">
+    <span class="stat-pill__label">Active</span>
+    <span class="stat-pill__value">{{ active }}</span>
+  </div>
+  <div class="stat-pill stat-pill--muted">
+    <span class="stat-pill__label">Inactive</span>
+    <span class="stat-pill__value">{{ inactive }}</span>
+  </div>
+</div>
+
+{# ── Flash Messages ── #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert--{{ category }}">
+        <i class="fa fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{# ── Data Table ── #}
+<div class="form-card">
+  {% if classes %}
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th><i class="fa fa-book"></i> Class Name</th>
+          <th><i class="fa fa-tag"></i> Code</th>
+          <th><i class="fa fa-calendar"></i> Semester</th>
+          <th><i class="fa fa-calendar-o"></i> Academic Year</th>
+          <th><i class="fa fa-sitemap"></i> Sections</th>
+          <th><i class="fa fa-circle"></i> Status</th>
+          <th class="text-center"><i class="fa fa-cogs"></i> Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cls in classes %}
+        <tr>
+          <td>
+            <span class="fw-semibold">{{ cls.class_name }}</span>
+          </td>
+          <td>
+            <code class="code-badge">{{ cls.course_code or '—' }}</code>
+          </td>
+          <td>{{ cls.semester or '—' }}</td>
+          <td>{{ cls.academic_year or '—' }}</td>
+          <td>
+            <span class="badge badge-secondary">
+              {{ cls.section_count }} section{{ 's' if cls.section_count != 1 else '' }}
+            </span>
+          </td>
+          <td>
+            {% if cls.is_active %}
+              <span class="badge badge-success">
+                <i class="fa fa-check-circle"></i> Active
+              </span>
+            {% else %}
+              <span class="badge badge-secondary">
+                <i class="fa fa-times-circle"></i> Inactive
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-group">
+              {# Edit #}
+              <a href="{{ url_for('admin.edit_class', class_id=cls.id) }}"
+                 class="btn btn-ghost btn--sm"
+                 title="Edit Class">
+                <i class="fa fa-pencil"></i> Edit
+              </a>
+
+              {# Toggle Active/Inactive #}
+              <form method="POST"
+                    action="{{ url_for('admin.toggle_class', class_id=cls.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('Toggle status for {{ cls.class_name }}?');">
+
+                <button type="submit"
+                        class="btn btn-ghost btn--sm {% if cls.is_active %}btn--warning{% else %}btn--success{% endif %}"
+                        title="{{ 'Deactivate' if cls.is_active else 'Activate' }}">
+                  <i class="fa fa-{% if cls.is_active %}toggle-off{% else %}toggle-on{% endif %}"></i>
+                  {{ 'Deactivate' if cls.is_active else 'Activate' }}
+                </button>
+              </form>
+
+              {# Add Section for this class #}
+              <a href="{{ url_for('admin.add_section', class_id=cls.id) }}"
+                 class="btn btn-ghost btn--sm btn--accent"
+                 title="Add Section to {{ cls.class_name }}">
+                <i class="fa fa-plus-circle"></i> Add Section
+              </a>
+
+              {# Delete class #}
+              <form method="POST"
+                    action="{{ url_for('admin.delete_class', class_id=cls.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('WARNING: Permanently delete class {{ cls.class_name }} and ALL its sections? This cannot be undone.');">
+                <button type="submit" class="btn btn-ghost btn--sm btn--danger" title="Delete class">
+                  <i class="fa fa-trash"></i> Delete
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fa fa-graduation-cap empty-state__icon"></i>
+    <h3 class="empty-state__title">No Classes Found</h3>
+    <p class="empty-state__text">Get started by adding your first class.</p>
+    <a href="{{ url_for('admin.add_class') }}" class="btn btn-primary">
+      <i class="fa fa-plus"></i> Add Class
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Engagement Monitoring — EngageVision{% endblock %}
+{% block page_title %}Engagement Monitoring{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      <i class="fas fa-video"></i> Engagement Monitoring
+    </h1>
+    <p class="page-subtitle">
+      Upload a classroom video for AI-powered engagement analysis
+    </p>
+  </div>
+
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-ghost">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+
+
+<!-- Video Processing Card -->
+<div class="monitoring-card">
+
+  <div class="monitoring-card-header">
+    <div>
+      <h2>
+        <i class="fas fa-film"></i> Process Classroom Video
+      </h2>
+      <p>
+        Upload a classroom recording to detect students and analyse engagement.
+      </p>
+    </div>
+  </div>
+
+
+  <!-- Upload -->
+  <form method="POST"
+      action="{{ url_for('monitoring.upload_video') }}"
+      enctype="multipart/form-data"
+      id="videoProcessForm">
+
+    <div class="video-upload-area">
+
+      <div class="upload-icon">
+        <i class="fas fa-cloud-upload-alt"></i>
+      </div>
+
+      <h3>Upload Classroom Video</h3>
+
+      <p>
+        Select a classroom video to start engagement monitoring.
+      </p>
+
+      <label for="video" class="btn btn-primary">
+        <i class="fas fa-folder-open"></i>
+        Choose Video
+      </label>
+
+      <input
+        type="file"
+        id="video"
+        name="video"
+        accept="video/*"
+        required
+        hidden
+      >
+
+      <div id="selectedFile" class="selected-file" style="display:none;">
+        <i class="fas fa-video"></i>
+        <span id="fileName"></span>
+      </div>
+
+    </div>
+
+
+    <!-- Process button -->
+    <div class="process-action">
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-lg"
+        id="processBtn"
+        disabled>
+
+        <i class="fas fa-play"></i>
+        Process Video
+
+      </button>
+
+    </div>
+
+  </form>
+
+
+  <!-- Processing message -->
+  <div id="processingMessage"
+       class="processing-message"
+       style="display:none;">
+
+    <div class="processing-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
+
+    <div>
+      <strong>Processing video...</strong>
+      <p>
+        Please wait while EngageVision analyses the classroom video.
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- Assigned Classes -->
+{% if assignments %}
+
+<div class="monitoring-card assignments-card">
+
+  <div class="monitoring-card-header">
+    <div>
+      <h2>
+        <i class="fas fa-chalkboard"></i> Assigned Classes
+      </h2>
+
+      <p>
+        Your assigned class and section.
+      </p>
+    </div>
+  </div>
+
+
+  <div class="mini-class-list">
+
+    {% for a in assignments %}
+
+    <div class="mini-class-item">
+
+      <i class="fas fa-book"></i>
+
+      <span>
+        <strong>{{ a.class_name }}</strong>
+        — Section {{ a.section_name }}
+
+        {% if a.student_count is defined %}
+        <em>({{ a.student_count }} students)</em>
+        {% endif %}
+      </span>
+
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+<script>
+
+const videoInput = document.getElementById('video');
+const processBtn = document.getElementById('processBtn');
+const selectedFile = document.getElementById('selectedFile');
+const fileName = document.getElementById('fileName');
+const processForm = document.getElementById('videoProcessForm');
+const processingMessage = document.getElementById('processingMessage');
+
+
+videoInput.addEventListener('change', function () {
+
+    if (this.files && this.files.length > 0) {
+
+        const file = this.files[0];
+
+        fileName.textContent = file.name;
+
+        selectedFile.style.display = 'flex';
+
+        processBtn.disabled = false;
+
+    } else {
+
+        selectedFile.style.display = 'none';
+
+        processBtn.disabled = true;
+
+    }
+
+});
+
+
+processForm.addEventListener('submit', function () {
+
+    processBtn.disabled = true;
+
+    processBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    processingMessage.style.display = 'flex';
+
+});
+
+</script>
+
+{% endblock %}

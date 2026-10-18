@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}View Teacher — EngageVision{% endblock %}
+
+{% block page_title %}Teacher Details{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="fas fa-user"></i> Teacher Details
+        </h1>
+
+        <p class="page-subtitle">
+            Account information for {{ teacher.first_name }} {{ teacher.last_name }}
+        </p>
+    </div>
+
+    <div class="header-actions">
+        <a href="{{ url_for('admin.edit_teacher', teacher_id=teacher.id) }}"
+           class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Teacher
+        </a>
+
+        <a href="{{ url_for('admin.teachers') }}"
+           class="btn btn-ghost">
+            <i class="fas fa-arrow-left"></i> Back to Teachers
+        </a>
+    </div>
+</div>
+
+
+<div class="profile-layout">
+
+    <div class="profile-card">
+
+        <!-- Teacher Profile Header -->
+        <div class="profile-avatar-section">
+
+            <div class="profile-avatar profile-avatar-teacher">
+                <span style="font-size:2rem;font-weight:700;color:var(--primary);">
+                    {{ teacher.first_name[0]|upper }}{{ teacher.last_name[0]|upper if teacher.last_name else '' }}
+                </span>
+            </div>
+
+            <div>
+                <h2>
+                    {{ teacher.first_name }} {{ teacher.last_name }}
+                </h2>
+
+                <span class="user-role-badge role-teacher">
+                    TEACHER
+                </span>
+
+                {% if teacher.is_active %}
+                    <span class="badge badge-success" style="margin-left:0.5rem;">
+                        <i class="fas fa-circle"></i> Active
+                    </span>
+                {% else %}
+                    <span class="badge badge-danger" style="margin-left:0.5rem;">
+                        <i class="fas fa-circle"></i> Inactive
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        <!-- Teacher Details -->
+        <div class="profile-details">
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-user"></i> Username
+                </span>
+
+                <span class="detail-value">
+                    <code>{{ teacher.username }}</code>
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-envelope"></i> Email
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.email }}
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-id-badge"></i> Staff ID
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.staff_id or '—' }}
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-building"></i> Department
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.department or '—' }}
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-phone"></i> Phone
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.phone or '—' }}
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-calendar-plus"></i> Created
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.created_at.strftime('%d %B %Y, %I:%M %p')
+                       if teacher.created_at else 'N/A' }}
+                </span>
+            </div>
+
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    <i class="fas fa-clock"></i> Last Login
+                </span>
+
+                <span class="detail-value">
+                    {{ teacher.last_signed_in.strftime('%d %b %Y, %I:%M %p')
+                       if teacher.last_signed_in else 'Never' }}
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- Teacher Actions -->
+        <div class="profile-actions"
+             style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+
+            <a href="{{ url_for('admin.edit_teacher', teacher_id=teacher.id) }}"
+               class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+
+
+            <form method="POST"
+                  action="{{ url_for('admin.toggle_teacher', teacher_id=teacher.id) }}">
+
+                <button type="submit"
+                        class="btn btn-sm {{ 'btn-warning' if teacher.is_active else 'btn-success' }}"
+                        onclick="return confirm('Are you sure you want to {% if teacher.is_active %}Deactivate{% else %}Activate{% endif %} this teacher?');">
+
+                    <i class="fas fa-{{ 'ban' if teacher.is_active else 'check' }}"></i>
+
+                    {{ 'Deactivate' if teacher.is_active else 'Activate' }}
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
